@@ -8,12 +8,12 @@
 %define dri_drivers --with-dri-drivers=swrast
 %else
 %define with_hardware 1
-%define base_drivers mga,nouveau,r128,radeon,r200,savage,tdfx
+%define base_drivers nouveau,radeon,r200
 %ifarch %{ix86}
-%define ix86_drivers ,i810,i915,i965,sis,unichrome
+%define ix86_drivers ,i915,i965
 %endif
 %ifarch x86_64
-%define amd64_drivers ,i915,i965,unichrome
+%define amd64_drivers ,i915,i965
 %endif
 %ifarch ia64
 %define ia64_drivers ,i915
@@ -24,13 +24,13 @@
 %define _default_patch_fuzz 2
 
 %define manpages gl-manpages-1.0.1
-#define gitdate 20111103
+#% define gitdate 20120126
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 7.11.2
-Release: 3%{?dist}
+Version: 8.0.1
+Release: 6%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -42,28 +42,20 @@ Source0: ftp://ftp.freedesktop.org/pub/%{name}/%{version}/MesaLib-%{version}.tar
 Source2: %{manpages}.tar.bz2
 Source3: make-git-snapshot.sh
 
-Patch2: mesa-7.1-nukeglthread-debug.patch
-Patch3: mesa-no-mach64.patch
-Patch4: legacy-drivers.patch
-
 #Patch7: mesa-7.1-link-shared.patch
 Patch8: mesa-7.10-llvmcore.patch
-
-Patch30: mesa-7.6-hush-vblank-warning.patch
-Patch31: mesa-7.10-swrastg.patch
-Patch32: mesa-7.11-generic-wmb.patch
-Patch34: 0001-nv50-fix-max-texture-levels.patch
-Patch35: mesa-7.11-branch-fixes.patch
+Patch9: mesa-8.0-llvmpipe-shmget.patch
+Patch10: mesa-8.0.1-git.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
-BuildRequires: kernel-headers >= 2.6.27-0.305.rc5.git6
+BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
-BuildRequires: libdrm-devel >= 2.4.24-1
+BuildRequires: libdrm-devel >= 2.4.27-1
 BuildRequires: libXxf86vm-devel
-BuildRequires: expat-devel >= 2.0
-BuildRequires: xorg-x11-proto-devel >= 7.4-35
+BuildRequires: expat-devel
+BuildRequires: xorg-x11-proto-devel
 BuildRequires: makedepend
 BuildRequires: libselinux-devel
 BuildRequires: libXext-devel
@@ -74,12 +66,14 @@ BuildRequires: libXmu-devel
 BuildRequires: elfutils
 BuildRequires: python
 %if %{with_hardware}
-BuildRequires: llvm-static
+BuildRequires: llvm-devel >= 3.0
 %endif
 BuildRequires: libxml2-python
 BuildRequires: libudev-devel
 BuildRequires: libtalloc-devel
 BuildRequires: bison flex
+BuildRequires: pkgconfig(wayland-client)
+BuildRequires: pkgconfig(wayland-server)
 
 %description
 Mesa
@@ -90,11 +84,7 @@ Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 Provides: libGL
-Requires: libdrm%{?isa} >= 2.4.23-1
 Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
-%if %{with_hardware}
-Conflicts: xorg-x11-server-Xorg < 1.4.99.901-14
-%endif
 
 %description libGL
 Mesa libGL runtime library.
@@ -105,7 +95,6 @@ Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
-Requires: libdrm%{?isa} >= 2.4.23-1
 
 %description libEGL
 Mesa libEGL runtime libraries
@@ -116,7 +105,6 @@ Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
-Requires: libdrm%{?isa} >= 2.4.23-1
 
 %description libGLES
 Mesa GLES runtime libraries
@@ -132,16 +120,10 @@ Summary: Mesa-based DRI drivers
 Group: User Interface/X Hardware Support
 Requires: mesa-dri-filesystem%{?_isa}
 Obsoletes: mesa-dri-drivers-experimental < 0:7.10-0.24
+Obsoletes: mesa-dri-drivers-dri1 < 7.12
 Obsoletes: mesa-dri-llvmcore <= 7.12
 %description dri-drivers
 Mesa-based DRI drivers.
-
-%package dri-drivers-dri1
-Summary: Mesa-based DRI1 drivers
-Group: User Interface/X Hardware Support
-Requires: mesa-dri-filesystem%{?isa}
-%description dri-drivers-dri1
-Mesa-based DRI1 drivers.
 
 %package -n khrplatform-devel
 Summary: Khronos platform development package
@@ -156,7 +138,6 @@ Summary: Mesa libGL development package
 Group: Development/Libraries
 Requires: mesa-libGL = %{version}-%{release}
 Provides: libGL-devel
-Conflicts: xorg-x11-proto-devel <= 7.2-12
 
 %description libGL-devel
 Mesa libGL development package
@@ -220,21 +201,79 @@ Requires: mesa-libOSMesa = %{version}-%{release}
 Mesa offscreen rendering development package
 
 
+%package libgbm
+Summary: Mesa gbm library
+Group: System Environment/Libraries
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+Provides: libgbm
+
+%description libgbm
+Mesa gbm runtime library.
+
+
+%package libgbm-devel
+Summary: Mesa libgbm development package
+Group: Development/Libraries
+Requires: mesa-libgbm%{?_isa} = %{version}-%{release}
+Provides: libgbm-devel
+
+%description libgbm-devel
+Mesa libgbm development package
+
+
+%package libwayland-egl
+Summary: Mesa libwayland-egl library
+Group: System Environment/Libraries
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+Provides: libwayland-egl
+
+%description libwayland-egl
+Mesa libwayland-egl runtime library.
+
+
+%package libwayland-egl-devel
+Summary: Mesa libwayland-egl development package
+Group: Development/Libraries
+Requires: mesa-libwayland-egl%{?_isa} = %{version}-%{release}
+Provides: libwayland-egl-devel
+
+%description libwayland-egl-devel
+Mesa libwayland-egl development package
+
+%package libxatracker
+Summary: Mesa XA state tracker for vmware
+Group: System Environment/Libraries
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+Provides: libxatracker
+
+%description libxatracker
+Mesa XA state tracker for vmware
+
+%package libxatracker-devel
+Summary: Mesa XA state tracker development package
+Group: Development/Libraries
+Requires: mesa-libxatracker%{?_isa} = %{version}-%{release}
+Provides: libxatracker-devel
+
+%description libxatracker-devel
+Mesa XA state tracker development package
+
 %prep
 %setup -q -n Mesa-%{version}%{?snapshot} -b0 -b2
 #setup -q -n mesa-%{gitdate} -b2
-%patch2 -p1 -b .intel-glthread
-%patch3 -p1 -b .no-mach64
-%patch4 -p1 -b .classic
 #patch7 -p1 -b .dricore
 %patch8 -p1 -b .llvmcore
-%patch30 -p1 -b .vblank-warning
-#patch31 -p1 -b .swrastg
-%patch32 -p1 -b .wmb
-%patch34 -p1 -b .nv50-texlevel
-%patch35 -p1 -b .branch-fixes
+%patch9 -p1 -b .shmget
+%patch10 -p1 -b .git
 
 %build
+
+# default to dri (not xlib) for libGL on all arches
+# XXX please fix upstream
+sed -i 's/^default_driver.*$/default_driver="dri"/' configure.ac
 
 autoreconf --install  
 
@@ -248,26 +287,28 @@ export CXXFLAGS="$RPM_OPT_FLAGS"
 %endif
 
 %configure %{common_flags} \
-    --disable-glw \
-    --disable-glut \
-    --enable-gl-osmesa \
-    --with-driver=dri \
-    --with-osmesa-bits=8 \
+    --enable-osmesa \
+    --enable-xcb \
     --with-dri-driverdir=%{_libdir}/dri \
     --enable-egl \
     --enable-gles1 \
     --enable-gles2 \
     --disable-gallium-egl \
+    --with-egl-platforms=x11,wayland,drm \
+    --enable-shared-glapi \
+    --enable-gbm \
 %if %{with_hardware}
-    --with-gallium-drivers=r300,r600,nouveau,swrast \
+    --with-gallium-drivers=svga,r300,r600,nouveau,swrast \
     --enable-gallium-llvm \
+    --enable-xa \
 %else
     --disable-gallium-llvm \
     --with-gallium-drivers=swrast \
+    --enable-dri \
 %endif
     %{?dri_drivers}
 
-make %{?_smp_mflags}
+make %{?_smp_mflags} MKDEP=/bin/true
 
 pushd ../%{manpages}
 autoreconf -v --install
@@ -290,9 +331,9 @@ install -d $RPM_BUILD_ROOT%{_libdir}/dri
 # use gallium driver iff built
 [ -f %{_lib}/gallium/r300_dri.so ] && cp %{_lib}/gallium/r300_dri.so %{_lib}/r300_dri.so
 [ -f %{_lib}/gallium/r600_dri.so ] && cp %{_lib}/gallium/r600_dri.so %{_lib}/r600_dri.so
-[ -f %{_lib}/gallium/swrastg_dri.so ] && mv %{_lib}/gallium/swrastg_dri.so %{_lib}/swrast_dri.so
+[ -f %{_lib}/gallium/swrast_dri.so ] && mv %{_lib}/gallium/swrast_dri.so %{_lib}/swrast_dri.so
 
-for f in i810 i915 i965 mach64 mga r128 r200 r300 r600 radeon savage sis swrast tdfx unichrome nouveau_vieux gallium/vmwgfx ; do
+for f in i915 i965 r200 r300 r600 radeon swrast nouveau_vieux gallium/vmwgfx ; do
     so=%{_lib}/${f}_dri.so
     test -e $so && echo $so
 done | xargs install -m 0755 -t $RPM_BUILD_ROOT%{_libdir}/dri >& /dev/null || :
@@ -333,6 +374,10 @@ rm -rf $RPM_BUILD_ROOT
 %postun libEGL -p /sbin/ldconfig
 %post libGLES -p /sbin/ldconfig
 %postun libGLES -p /sbin/ldconfig
+%post libgbm -p /sbin/ldconfig
+%postun libgbm -p /sbin/ldconfig
+%post libwayland-egl -p /sbin/ldconfig
+%postun libwayland-egl -p /sbin/ldconfig
 
 %files libGL
 %defattr(-,root,root,-)
@@ -353,8 +398,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libGLESv1_CM.so.1.*
 %{_libdir}/libGLESv2.so.2
 %{_libdir}/libGLESv2.so.2.*
-%{_libdir}/libglapi.so.0
-%{_libdir}/libglapi.so.0.*
 
 %files dri-filesystem
 %defattr(-,root,root,-)
@@ -363,6 +406,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files dri-drivers
 %defattr(-,root,root,-)
+%{_libdir}/libglapi.so.0
+%{_libdir}/libglapi.so.0.*
 %if %{with_hardware}
 %{_libdir}/dri/radeon_dri.so
 %{_libdir}/dri/r200_dri.so
@@ -376,26 +421,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %{_libdir}/dri/nouveau_dri.so
 %{_libdir}/dri/nouveau_vieux_dri.so
+%{_libdir}/dri/vmwgfx_dri.so
 %endif
 %{_libdir}/dri/swrast_dri.so
-%exclude %{_libdir}/dri/swrastg_dri.so
-
-%files dri-drivers-dri1
-%defattr(-,root,root,-)
-%doc docs/COPYING
-%if %{with_hardware}
-%ifarch %{ix86} x86_64
-%{_libdir}/dri/unichrome_dri.so
-%ifarch %{ix86}
-%{_libdir}/dri/i810_dri.so
-%{_libdir}/dri/sis_dri.so
-%endif
-%endif
-%{_libdir}/dri/r128_dri.so
-%{_libdir}/dri/mga_dri.so
-%{_libdir}/dri/savage_dri.so
-%{_libdir}/dri/tdfx_dri.so
-%endif
 
 %files -n khrplatform-devel
 %defattr(-,root,root,-)
@@ -413,6 +441,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/GL/internal/dri_interface.h
 %{_libdir}/pkgconfig/dri.pc
 %{_libdir}/libGL.so
+%{_libdir}/libglapi.so
 %{_libdir}/pkgconfig/gl.pc
 %{_datadir}/man/man3/gl[^uX]*.3gl*
 %{_datadir}/man/man3/glX*.3gl*
@@ -422,6 +451,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/EGL
 %{_includedir}/EGL/eglext.h
 %{_includedir}/EGL/egl.h
+%{_includedir}/EGL/eglmesaext.h
 %{_includedir}/EGL/eglplatform.h
 %dir %{_includedir}/KHR
 %{_includedir}/KHR/khrplatform.h
@@ -443,7 +473,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/glesv2.pc
 %{_libdir}/libGLESv1_CM.so
 %{_libdir}/libGLESv2.so
-%{_libdir}/libglapi.so
 
 %files libGLU
 %defattr(-,root,root,-)
@@ -461,7 +490,7 @@ rm -rf $RPM_BUILD_ROOT
 %files libOSMesa
 %defattr(-,root,root,-)
 %doc docs/COPYING
-%{_libdir}/libOSMesa.so.7*
+%{_libdir}/libOSMesa.so.8*
 
 %files libOSMesa-devel
 %defattr(-,root,root,-)
@@ -470,16 +499,107 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libOSMesa.so
 %{_libdir}/pkgconfig/osmesa.pc
 
+%files libgbm
+%defattr(-,root,root,-)
+%doc docs/COPYING
+%{_libdir}/libgbm.so.1
+%{_libdir}/libgbm.so.1.*
+
+%files libgbm-devel
+%defattr(-,root,root,-)
+%{_libdir}/libgbm.so
+%{_includedir}/gbm.h
+%{_libdir}/pkgconfig/gbm.pc
+
+%files libwayland-egl
+%defattr(-,root,root,-)
+%doc docs/COPYING
+%{_libdir}/libwayland-egl.so.1
+%{_libdir}/libwayland-egl.so.1.*
+
+%files libwayland-egl-devel
+%defattr(-,root,root,-)
+%{_libdir}/libwayland-egl.so
+%{_libdir}/pkgconfig/wayland-egl.pc
+
+%files libxatracker
+%defattr(-,root,root,-)
+%doc docs/COPYING
+%if %{with_hardware}
+%{_libdir}/libxatracker.so.1
+%{_libdir}/libxatracker.so.1.*
+%endif
+
+%files libxatracker-devel
+%defattr(-,root,root,-)
+%if %{with_hardware}
+%{_libdir}/libxatracker.so
+%{_includedir}/xa_tracker.h
+%{_includedir}/xa_composite.h
+%{_includedir}/xa_context.h
+%{_libdir}/pkgconfig/xatracker.pc
+%endif
+
 %changelog
-* Tue Jan 03 2012 Dave Airlie <airlied@redhat.com> 7.11.2-3
-- fix for llvm 3.0 (#768978)
+* Wed Mar 21 2012 Adam Jackson <ajax@redhat.com> 8.0.1-6
+- mesa-8.0.1-llvmpipe-shmget.patch: Use ShmGetImage if possible
 
-* Wed Dec 14 2011 Adam Jackson <ajax@redhat.com> 7.11.2-2
-- Disable hardware drivers on ppc* for RHEL
+* Mon Mar 19 2012 Adam Jackson <ajax@redhat.com> 8.0.1-5
+- Move libglapi into -dri-drivers instead of -libGLES as being marginally
+  more appropriate (libGL wants to have DRI drivers, but doesn't need to
+  have a full libGLES too).
 
-* Mon Nov 28 2011 Adam Jackson <ajax@redhat.com> 7.11.2-1
-- Mesa 7.11.2
-- Pull in archful -dri-drivers for libGL to pacify wine (#757464)
+* Thu Mar 15 2012 Dave Airlie <airlied@gmail.com> 8.0.1-4
+- enable vmwgfx + xa state tracker
+
+* Thu Mar 01 2012 Adam Jackson <ajax@redhat.com> 8.0.1-3
+- mesa-8.0.1-git.patch: Sync with 8.0 branch (commit a3080987)
+
+* Sat Feb 18 2012 Thorsten Leemhuis <fedora@leemhuis.info> 8.0.1-2
+- a few changes for weston, the wayland reference compositor (#790542):
+- enable gbm and shared-glapi in configure command (the latter is required by 
+  the former) and add subpackages libgbm and libgbm-devel
+- add --with-egl-platforms=x11,wayland,drm to configure command and add 
+  subpackages libwayland-egl and libwayland-egl-devel
+
+* Fri Feb 17 2012 Adam Jackson <ajax@redhat.com> 8.0.1-1
+- Mesa 8.0.1
+
+* Mon Feb 13 2012 Adam Jackson <ajax@redhat.com> 8.0-1
+- Mesa 8.0
+
+* Mon Feb 13 2012 Adam Jackson <ajax@redhat.com> 8.0-0.2
+- Default to DRI libGL on all arches (#789402)
+
+* Thu Jan 26 2012 Dave Airlie <airlied@redhat.com> 8.0-0.1
+- initial 8.0 snapshot
+
+* Thu Jan 05 2012 Adam Jackson <ajax@redhat.com> 7.12-0.7
+- Today's git snapshot
+
+* Wed Dec 14 2011 Adam Jackson <ajax@redhat.com> 7.12-0.6
+- Today's git snapshot
+- Disable hardware drivers on ppc* in RHEL
+
+* Fri Dec 02 2011 Dan Horák <dan[at]danny.cz> 7.12-0.5
+- fix build on s390(x)
+
+* Tue Nov 29 2011 Adam Jackson <ajax@redhat.com> 7.12-0.4
+- Today's git snapshot
+- --enable-xcb
+- mesa-7.1-nukeglthread-debug.patch: Drop
+
+* Thu Nov 17 2011 Adam Jackson <ajax@redhat.com> 7.12-0.3
+- mesa-dri-drivers Obsoletes: mesa-dri-drivers-dri1 < 7.12
+
+* Wed Nov 16 2011 Adam Jackson <ajax@redhat.com> 7.12-0.2
+- Cleanups to BuildRequires, Requires, Conflicts, etc.
+
+* Mon Nov 14 2011 Dave Airlie <airlied@redhat.com> 7.12-0.1
+- rebase to upstream snapshot of 7.12
+
+* Mon Nov 14 2011 Adam Jackson <ajax@redhat.com> 7.11-12
+- Rebuild for new libllvm soname
 
 * Wed Nov 09 2011 Adam Jackson <ajax@redhat.com> 7.11-11
 - Obsolete more -llvmcore (#752152)
