@@ -29,8 +29,8 @@
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 8.0.1
-Release: 6%{?dist}
+Version: 8.0.2
+Release: 2%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -45,7 +45,9 @@ Source3: make-git-snapshot.sh
 #Patch7: mesa-7.1-link-shared.patch
 Patch8: mesa-7.10-llvmcore.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
-Patch10: mesa-8.0.1-git.patch
+Patch10: 0001-intel-fix-null-dereference-processing-HiZ-buffer.patch
+Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
+Patch12: mesa-8.0.1-fix-16bpp.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -84,7 +86,6 @@ Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 Provides: libGL
-Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
 
 %description libGL
 Mesa libGL runtime library.
@@ -94,7 +95,6 @@ Summary: Mesa libEGL runtime libraries
 Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
 
 %description libEGL
 Mesa libEGL runtime libraries
@@ -104,7 +104,6 @@ Summary: Mesa libGLES runtime libraries
 Group: System Environment/Libraries
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
-Requires: mesa-dri-drivers%{?_isa} = %{version}-%{release}
 
 %description libGLES
 Mesa GLES runtime libraries
@@ -261,13 +260,24 @@ Provides: libxatracker-devel
 %description libxatracker-devel
 Mesa XA state tracker development package
 
+%package libglapi
+Summary: Mesa shared glapi
+Group: System Environment/Libraries
+Requires(post): /sbin/ldconfig
+Requires(postun): /sbin/ldconfig
+
+%description libglapi
+Mesa shared glapi
+
 %prep
-%setup -q -n Mesa-%{version}%{?snapshot} -b0 -b2
+%setup -q -n Mesa-%{version}%{?snapshot} -b2
 #setup -q -n mesa-%{gitdate} -b2
 #patch7 -p1 -b .dricore
 %patch8 -p1 -b .llvmcore
 %patch9 -p1 -b .shmget
-%patch10 -p1 -b .git
+%patch10 -p1 -b .intel-hiz-fix
+%patch11 -p1 -b .nouveau
+%patch12 -p1 -b .16bpp
 
 %build
 
@@ -340,11 +350,7 @@ done | xargs install -m 0755 -t $RPM_BUILD_ROOT%{_libdir}/dri >& /dev/null || :
 
 # strip out undesirable headers
 pushd $RPM_BUILD_ROOT%{_includedir}/GL 
-rm -f [a-fh-np-wyz]*.h glf*.h glut*.h
-popd
-
-pushd $RPM_BUILD_ROOT%{_libdir}
-rm -f xorg/modules/drivers/modesetting_drv.so
+rm -f [vw]*.h
 popd
 
 # man pages
@@ -404,10 +410,12 @@ rm -rf $RPM_BUILD_ROOT
 %doc docs/COPYING
 %dir %{_libdir}/dri
 
-%files dri-drivers
-%defattr(-,root,root,-)
+%files libglapi
 %{_libdir}/libglapi.so.0
 %{_libdir}/libglapi.so.0.*
+
+%files dri-drivers
+%defattr(-,root,root,-)
 %if %{with_hardware}
 %{_libdir}/dri/radeon_dri.so
 %{_libdir}/dri/r200_dri.so
@@ -541,6 +549,23 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Apr 02 2012 Adam Jackson <ajax@redhat.com> 8.0.2-2
+- mesa-8.0.1-fix-16bpp.patch: Fix 16bpp in llvmpipe
+
+* Sat Mar 31 2012 Dave Airlie <airlied@redhat.com> 8.0.2-1
+- get latest 8.0.2 set of fixes
+
+* Wed Mar 28 2012 Adam Jackson <ajax@redhat.com> 8.0.1-9
+- Subpackage libglapi instead of abusing -dri-drivers for it to keep minimal
+  disk space minimal. (#807750)
+
+* Wed Mar 28 2012 Adam Jackson <ajax@redhat.com> 8.0.1-8
+- mesa-8.0.1-llvmpipe-shmget.patch: Fix image pitch bug.
+
+* Fri Mar 23 2012 Adam Jackson <ajax@redhat.com> 8.0.1-7
+- mesa-8.0-nouveau-tfp-blacklist.patch: gnome-shell blacklisting: nvfx and
+  below with <= 64M of vram, and all nv30.
+
 * Wed Mar 21 2012 Adam Jackson <ajax@redhat.com> 8.0.1-6
 - mesa-8.0.1-llvmpipe-shmget.patch: Use ShmGetImage if possible
 
