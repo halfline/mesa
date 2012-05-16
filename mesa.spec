@@ -1,9 +1,16 @@
+%if 0%{?rhel}
+%define rhel_no_hw_arches ppc ppc64 ppc64p7
+%endif
+
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
-# disable hw on PPC, too as only very special configurations have video cards
-%ifarch s390 s390x ppc ppp64
+%ifarch s390 s390x %{?rhel_no_hw_arches}
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
+# llvm has some serious issues on PPC*, disable usage
+%ifnarch ppc ppc64 ppc64p7
+%define with_llvm 1
+%endif
 %define with_hardware 1
 %define base_drivers nouveau,radeon,r200
 %ifarch %{ix86}
@@ -29,7 +36,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 8.0.2
-Release: 5%{?dist}
+Release: 8%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -45,8 +52,9 @@ Source3: make-git-snapshot.sh
 Patch8: mesa-7.10-llvmcore.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch10: 0001-intel-fix-null-dereference-processing-HiZ-buffer.patch
-Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
+Patch13: mesa-8.0-nouveau-vieux-nvfx-lowmem.patch
+Patch14: mesa-8.0-nouveau-vieux-finish.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -67,7 +75,9 @@ BuildRequires: libXmu-devel
 BuildRequires: elfutils
 BuildRequires: python
 %if %{with_hardware}
+%if 0%{?with_llvm}
 BuildRequires: llvm-devel >= 3.0
+%endif
 %endif
 BuildRequires: libxml2-python
 BuildRequires: libudev-devel
@@ -282,8 +292,9 @@ Mesa shared glapi
 %patch8 -p1 -b .llvmcore
 %patch9 -p1 -b .shmget
 %patch10 -p1 -b .intel-hiz-fix
-%patch11 -p1 -b .nouveau
 %patch12 -p1 -b .16bpp
+%patch13 -p1 -b .nouveau-lowmem
+%patch14 -p1 -b .nouveau-finish
 
 %build
 
@@ -315,7 +326,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS"
     --enable-gbm \
 %if %{with_hardware}
     --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,nouveau,swrast \
-    --enable-gallium-llvm \
+    %{?with_llvm:--enable-gallium-llvm} \
     %{?with_vmware:--enable-xa} \
 %else
     --disable-gallium-llvm \
@@ -559,8 +570,15 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Thu May 03 2012 Karsten Hopp <karsten@redhat.com> 8.0.2-5
-- disable HW on PPC, this also disables LLVM usage and dri drivers
+* Fri May 15 2012 Ben Skeggs <bskeggs@redhat.com> 8.0.2-8
+- nouveau: add back a missing hunk from a previous patch
+
+* Fri May 11 2012 Ben Skeggs <bskeggs@redhat.com> 8.0.2-7
+- nouveau: fix shell lag on <=nv2x chipsets, and hack around low-vram issues
+
+* Wed May 09 2012 Karsten Hopp <karsten@redhat.com> 8.0.2-6
+- revert disabling of hardware drivers, disable only llvm on PPC*
+  (#819060)
 
 * Thu Apr 26 2012 Adam Jackson <ajax@redhat.com> 8.0.2-4
 - Don't build vmware stuff on PPC (#815444)
