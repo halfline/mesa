@@ -77,7 +77,6 @@ BuildRequires: python
 BuildRequires: llvm-devel >= 3.1
 %endif
 %endif
-%endif
 BuildRequires: libxml2-python
 BuildRequires: libudev-devel
 BuildRequires: libtalloc-devel
