@@ -3,64 +3,63 @@
 %endif
 
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
-%ifarch s390 s390x %{?rhel_no_hw_arches}
+%ifarch s390 s390x  %{?rhel_no_hw_arches}
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
-# llvm has some serious issues on PPC*, disable usage
-%ifnarch ppc ppc64 ppc64p7
+# llvm is a joke on non-x86
+%ifarch %{ix86} x86_64
 %define with_llvm 1
 %endif
 %define with_hardware 1
 %define base_drivers nouveau,radeon,r200
 %ifarch %{ix86}
-%define ix86_drivers ,i915,i965
+%define platform_drivers ,i915,i965
 %define with_vmware 1
 %endif
 %ifarch x86_64
-%define amd64_drivers ,i915,i965
+%define platform_drivers ,i915,i965
 %define with_vmware 1
 %endif
 %ifarch ia64
-%define ia64_drivers ,i915
+%define platform_drivers ,i915
 %endif
-%define dri_drivers --with-dri-drivers=%{base_drivers}%{?ix86_drivers}%{?amd64_drivers}%{?ia64_drivers}
+%define dri_drivers --with-dri-drivers=%{base_drivers}%{?platform_drivers}
 %endif
 
 %define _default_patch_fuzz 2
 
 %define manpages gl-manpages-1.0.1
-#% define gitdate 20120126
+%define gitdate 20120717
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 8.0.3
-Release: 1%{?dist}
+Version: 8.1
+Release: 0.12%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
 
 #Source0: http://downloads.sf.net/mesa3d/MesaLib-%{version}.tar.bz2
 #Source0: http://www.mesa3d.org/beta/MesaLib-%{version}%{?snapshot}.tar.bz2
-Source0: ftp://ftp.freedesktop.org/pub/%{name}/%{version}/MesaLib-%{version}.tar.bz2
-#Source0: %{name}-%{gitdate}.tar.xz
+#Source0: ftp://ftp.freedesktop.org/pub/%{name}/%{version}/MesaLib-%{version}.tar.bz2
+Source0: %{name}-%{gitdate}.tar.xz
 Source2: %{manpages}.tar.bz2
 Source3: make-git-snapshot.sh
 
 #Patch7: mesa-7.1-link-shared.patch
-Patch8: mesa-7.10-llvmcore.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
+Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
-Patch13: mesa-8.0-nouveau-vieux-nvfx-lowmem.patch
-Patch14: mesa-8.0-nouveau-vieux-finish.patch
+Patch13: mesa-8.1-fixglpc.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
-BuildRequires: libdrm-devel >= 2.4.27-1
+BuildRequires: libdrm-devel >= 2.4.37
 BuildRequires: libXxf86vm-devel
 BuildRequires: expat-devel
 BuildRequires: xorg-x11-proto-devel
@@ -75,7 +74,8 @@ BuildRequires: elfutils
 BuildRequires: python
 %if %{with_hardware}
 %if 0%{?with_llvm}
-BuildRequires: llvm-devel >= 3.0
+BuildRequires: llvm-devel >= 3.1
+%endif
 %endif
 %endif
 BuildRequires: libxml2-python
@@ -91,8 +91,6 @@ Mesa
 %package libGL
 Summary: Mesa libGL runtime libraries and DRI drivers
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libGL
 # F17+'s libX11 changes extension libs to use _XGetRequest(), so if we built
 # against that, require it too
@@ -106,8 +104,6 @@ Mesa libGL runtime library.
 %package libEGL
 Summary: Mesa libEGL runtime libraries
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 
 %description libEGL
 Mesa libEGL runtime libraries
@@ -115,8 +111,6 @@ Mesa libEGL runtime libraries
 %package libGLES
 Summary: Mesa libGLES runtime libraries
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 
 %description libGLES
 Mesa GLES runtime libraries
@@ -175,8 +169,6 @@ Mesa libGLES development package
 %package libGLU
 Summary: Mesa libGLU runtime library
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libGLU
 
 %description libGLU
@@ -196,8 +188,6 @@ Mesa libGLU development package
 %package libOSMesa
 Summary: Mesa offscreen rendering libraries
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libOSMesa
 
 %description libOSMesa
@@ -216,8 +206,6 @@ Mesa offscreen rendering development package
 %package libgbm
 Summary: Mesa gbm library
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libgbm
 
 %description libgbm
@@ -234,11 +222,10 @@ Provides: libgbm-devel
 Mesa libgbm development package
 
 
+%if !0%{?rhel}
 %package libwayland-egl
 Summary: Mesa libwayland-egl library
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libwayland-egl
 
 %description libwayland-egl
@@ -253,13 +240,13 @@ Provides: libwayland-egl-devel
 
 %description libwayland-egl-devel
 Mesa libwayland-egl development package
+%endif
+
 
 %if 0%{?with_vmware}
 %package libxatracker
 Summary: Mesa XA state tracker for vmware
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 Provides: libxatracker
 
 %description libxatracker
@@ -278,21 +265,18 @@ Mesa XA state tracker development package
 %package libglapi
 Summary: Mesa shared glapi
 Group: System Environment/Libraries
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 
 %description libglapi
 Mesa shared glapi
 
 %prep
-%setup -q -n Mesa-%{version}%{?snapshot} -b2
-#setup -q -n mesa-%{gitdate} -b2
+#% setup -q -n Mesa-%{version}%{?snapshot} -b2
+%setup -q -n mesa-%{gitdate} -b2
 #patch7 -p1 -b .dricore
-%patch8 -p1 -b .llvmcore
 %patch9 -p1 -b .shmget
+%patch11 -p1 -b .nouveau
 %patch12 -p1 -b .16bpp
-%patch13 -p1 -b .nouveau-lowmem
-%patch14 -p1 -b .nouveau-finish
+%patch13 -p1 -b .fixglpc
 
 %build
 
@@ -319,13 +303,14 @@ export CXXFLAGS="$RPM_OPT_FLAGS"
     --enable-gles1 \
     --enable-gles2 \
     --disable-gallium-egl \
-    --with-egl-platforms=x11,wayland,drm \
+    --with-egl-platforms=x11,drm%{!?rhel:,wayland} \
     --enable-shared-glapi \
     --enable-gbm \
 %if %{with_hardware}
     --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,nouveau,swrast \
     %{?with_llvm:--enable-gallium-llvm} \
     %{?with_vmware:--enable-xa} \
+    %{?with_llvm:--with-llvm-shared-libs} \
 %else
     --disable-gallium-llvm \
     --with-gallium-drivers=swrast \
@@ -351,22 +336,18 @@ make install DESTDIR=$RPM_BUILD_ROOT DRI_DIRS=
 mkdir -p $RPM_BUILD_ROOT%{_includedir}/KHR
 install -m 0644 include/KHR/*.h $RPM_BUILD_ROOT%{_includedir}/KHR
 
-# just the DRI drivers that are sane
-install -d $RPM_BUILD_ROOT%{_libdir}/dri
-# use gallium driver iff built
-[ -f %{_lib}/gallium/r300_dri.so ] && cp %{_lib}/gallium/r300_dri.so %{_lib}/r300_dri.so
-[ -f %{_lib}/gallium/r600_dri.so ] && cp %{_lib}/gallium/r600_dri.so %{_lib}/r600_dri.so
-[ -f %{_lib}/gallium/swrast_dri.so ] && mv %{_lib}/gallium/swrast_dri.so %{_lib}/swrast_dri.so
-
-for f in i915 i965 r200 r300 r600 radeon swrast nouveau_vieux gallium/vmwgfx ; do
-    so=%{_lib}/${f}_dri.so
-    test -e $so && echo $so
-done | xargs install -m 0755 -t $RPM_BUILD_ROOT%{_libdir}/dri >& /dev/null || :
+%if 0%{?rhel}
+# remove pre-DX7 drivers
+rm -f $RPM_BUILD_ROOT%{_libdir}/dri/{radeon,r200,nouveau_vieux}*
+%endif
 
 # strip out undesirable headers
 pushd $RPM_BUILD_ROOT%{_includedir}/GL 
 rm -f [vw]*.h
 popd
+
+# remove .la files
+find $RPM_BUILD_ROOT -name \*.la | xargs rm -f
 
 # man pages
 pushd ../%{manpages}
@@ -395,10 +376,18 @@ rm -rf $RPM_BUILD_ROOT
 %postun libEGL -p /sbin/ldconfig
 %post libGLES -p /sbin/ldconfig
 %postun libGLES -p /sbin/ldconfig
+%post libglapi -p /sbin/ldconfig
+%postun libglapi -p /sbin/ldconfig
 %post libgbm -p /sbin/ldconfig
 %postun libgbm -p /sbin/ldconfig
+%if !0%{?rhel}
 %post libwayland-egl -p /sbin/ldconfig
 %postun libwayland-egl -p /sbin/ldconfig
+%endif
+%if 0%{?with_vmware}
+%post libxatracker -p /sbin/ldconfig
+%postun libxatracker -p /sbin/ldconfig
+%endif
 
 %files libGL
 %defattr(-,root,root,-)
@@ -432,8 +421,12 @@ rm -rf $RPM_BUILD_ROOT
 %files dri-drivers
 %defattr(-,root,root,-)
 %if %{with_hardware}
+%config(noreplace) %{_sysconfdir}/drirc
+%if !0%{?rhel}
 %{_libdir}/dri/radeon_dri.so
 %{_libdir}/dri/r200_dri.so
+%{_libdir}/dri/nouveau_vieux_dri.so
+%endif
 %{_libdir}/dri/r300_dri.so
 %{_libdir}/dri/r600_dri.so
 %ifarch %{ix86} x86_64 ia64
@@ -443,11 +436,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %endif
 %{_libdir}/dri/nouveau_dri.so
-%{_libdir}/dri/nouveau_vieux_dri.so
 %if 0%{?with_vmware}
 %{_libdir}/dri/vmwgfx_dri.so
 %endif
 %endif
+%{_libdir}/libdricore*.so*
 %{_libdir}/dri/swrast_dri.so
 
 %files -n khrplatform-devel
@@ -536,6 +529,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/gbm.h
 %{_libdir}/pkgconfig/gbm.pc
 
+%if !0%{?rhel}
 %files libwayland-egl
 %defattr(-,root,root,-)
 %doc docs/COPYING
@@ -546,6 +540,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libwayland-egl.so
 %{_libdir}/pkgconfig/wayland-egl.pc
+%endif
 
 %if 0%{?with_vmware}
 %files libxatracker
@@ -568,22 +563,52 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed May 23 2012 Adam Jackson <ajax@redhat.com> 8.0.3-1
-- Mesa 8.0.3
-- 0001-intel-fix-null-dereference-processing-HiZ-buffer.patch: Drop, merged.
+* Fri Jul 20 2012 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 8.1-0.12
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_18_Mass_Rebuild
 
-* Fri May 15 2012 Ben Skeggs <bskeggs@redhat.com> 8.0.2-8
-- nouveau: add back a missing hunk from a previous patch
+* Tue Jul 17 2012 Dave Airlie <airlied@redhat.com> 8.1-0.11
+- upstream snapshot: fixes build issues
 
-* Fri May 11 2012 Ben Skeggs <bskeggs@redhat.com> 8.0.2-7
-- nouveau: fix shell lag on <=nv2x chipsets, and hack around low-vram issues
+* Tue Jul 17 2012 Dave Airlie <airlied@redhat.com> 8.1-0.10
+- snapshot mesa: add some build hackarounds 
 
-* Wed May 09 2012 Karsten Hopp <karsten@redhat.com> 8.0.2-6
+* Sat Jul 14 2012 Ville Skyttä <ville.skytta@iki.fi> - 8.1-0.9
+- Call ldconfig at -libglapi and -libxatracker post(un)install time.
+- Drop redundant ldconfig dependencies, let rpm auto-add them.
+
+* Wed Jun 13 2012 Dave Airlie <airlied@redhat.com> 8.1-0.8
+- enable shared llvm usage.
+
+* Thu Jun 07 2012 Adam Jackson <ajax@redhat.com> 8.1-0.7
+- Disable llvm on non-x86 (#829020)
+
+* Sun Jun 03 2012 Dave Airlie <airlied@redhat.com> 8.1-0.6
+- rebase to git master + build on top of llvm 3.1
+
+* Thu May 17 2012 Adam Jackson <ajax@redhat.com> 8.1-0.5
+- mesa-8.0-llvmpipe-shmget.patch: Rediff for 8.1.
+
+* Thu May 10 2012 Karsten Hopp <karsten@redhat.com> 8.1-0.4
 - revert disabling of hardware drivers, disable only llvm on PPC*
   (#819060)
 
-* Thu Apr 26 2012 Adam Jackson <ajax@redhat.com> 8.0.2-4
-- Don't build vmware stuff on PPC (#815444)
+* Tue May 01 2012 Adam Jackson <ajax@redhat.com> 8.1-0.3
+- More RHEL tweaking: no pre-DX7 drivers, no wayland.
+
+* Thu Apr 26 2012 Karsten Hopp <karsten@redhat.com> 8.1-0.2
+- move drirc into with_hardware section (Dave Airlie)
+- libdricore.so and libglsl.so get built and installed on
+  non-hardware archs, include them in the file list
+
+* Thu Apr 26 2012 Adam Jackson <ajax@redhat.com> 8.1-0.2
+- Don't build vmware stuff on non-x86 (#815444)
+
+* Tue Apr 24 2012 Richard Hughes <rhughes@redhat.com> 8.0.3-0.1
+- Rebuild with new git snapshot
+- Remove upstreamed patches
+
+* Tue Apr 24 2012 Karsten Hopp <karsten@redhat.com> 8.0.2-4
+- disable llvm on PPC(64) in Fedora as recommended in bugzilla 769803
 
 * Tue Apr 10 2012 Adam Jackson <ajax@redhat.com> 8.0.2-3
 - Require newer libX11 on F17+
