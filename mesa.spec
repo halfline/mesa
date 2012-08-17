@@ -36,7 +36,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 8.1
-Release: 0.18%{?dist}
+Release: 0.18.1%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -342,7 +342,7 @@ install -m 0644 include/KHR/*.h $RPM_BUILD_ROOT%{_includedir}/KHR
 
 %if 0%{?rhel}
 # remove pre-DX9 drivers
-rm -f $RPM_BUILD_ROOT%{_libdir}/dri/{radeon,r200,nouveau_vieux}*
+rm -f $RPM_BUILD_ROOT%{_libdir}/dri/{radeon,r200,nouveau_vieux}_dri.*
 %endif
 
 # strip out undesirable headers
@@ -570,6 +570,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Aug 17 2012 Daniel Mach <dmach@redhat.com> 8.1-0.18.1
+- Fix removing pre-DX9 drivers in RHEL
+
 * Fri Aug 17 2012 Dave Airlie <airlied@redhat.com> 8.1-0.18
 - parallel make seems broken - on 16 way machine internally.
 
