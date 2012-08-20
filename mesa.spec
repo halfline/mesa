@@ -36,7 +36,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 8.1
-Release: 0.18.1%{?dist}
+Release: 0.18%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -570,9 +570,6 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Fri Aug 17 2012 Daniel Mach <dmach@redhat.com> 8.1-0.18.1
-- Fix removing pre-DX9 drivers in RHEL
-
 * Fri Aug 17 2012 Dave Airlie <airlied@redhat.com> 8.1-0.18
 - parallel make seems broken - on 16 way machine internally.
 
