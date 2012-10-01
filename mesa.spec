@@ -7,9 +7,11 @@
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
-# llvm support only works on some arches
-%ifarch %{ix86} x86_64 ppc ppc64 ppc64p7 %{arm}
+# llvm support only works on some arches (ppc back off for the moment)
+%ifarch %{ix86} x86_64 %{arm}
 %define with_llvm 1
+%else
+%define swrastc ,swrast
 %endif
 %define with_hardware 1
 %define base_drivers nouveau,radeon,r200
@@ -24,7 +26,7 @@
 %ifarch ia64
 %define platform_drivers ,i915
 %endif
-%define dri_drivers --with-dri-drivers=%{base_drivers}%{?platform_drivers}
+%define dri_drivers --with-dri-drivers=%{base_drivers}%{?platform_drivers}%{?swrastc}
 %endif
 
 %define _default_patch_fuzz 2
@@ -36,7 +38,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.0
-Release: 0.1%{?dist}
+Release: 0.3%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -92,6 +94,7 @@ BuildRequires: bison flex
 BuildRequires: pkgconfig(wayland-client)
 BuildRequires: pkgconfig(wayland-server)
 %endif
+BuildRequires: mesa-libGL-devel
 
 %description
 Mesa
@@ -322,7 +325,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS"
     --enable-gallium-llvm \
     --with-llvm-shared-libs \
 %else
-    --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,nouveau,swrast \
+    --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,nouveau \
 %endif
 %else
     --disable-gallium-llvm \
@@ -590,6 +593,14 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Oct 01 2012 Dan Horák <dan[at]danny.cz> 9.0-0.3
+- explicit BR: libGL-devel is required on s390(x), it's probbaly brought in indirectly on x86
+- gallium drivers must be set explicitely for s390(x) otherwise also r300, r600 and vmwgfx are also built
+
+* Mon Sep 24 2012 Adam Jackson <ajax@redhat.com> 9.0-0.2
+- Switch to swrast classic instead of softpipe for non-llvm arches
+- Re-disable llvm on ppc until it can draw pixels
+
 * Mon Sep 24 2012 Dave Airlie <airlied@redhat.com> 9.0-0.1
 - rebase to latest upstream 9.0 pre-release branch
 - add back glu from new upstream (split for f18 later)
