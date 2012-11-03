@@ -1,6 +1,38 @@
-% git describe origin/9.0
-mesa-9.0-12-gd56ee24
-
+diff --git a/bin/get-pick-list.sh b/bin/get-pick-list.sh
+new file mode 100755
+index 0000000..7288090
+--- /dev/null
++++ b/bin/get-pick-list.sh
+@@ -0,0 +1,29 @@
++#!/bin/sh
++
++# Script for generating a list of candidates for cherry-picking to a stable branch
++
++# Grep for commits with "cherry picked from commit" in the commit message.
++git log --reverse --grep="cherry picked from commit" origin/master..HEAD |\
++	grep "cherry picked from commit" |\
++	sed -e 's/^[[:space:]]*(cherry picked from commit[[:space:]]*//' -e 's/)//' > already_picked
++
++# Grep for commits that were marked as a candidate for the stable tree.
++git log --reverse --pretty=%H -i --grep='^[[:space:]]*NOTE: This is a candidate' HEAD..origin/master |\
++while read sha
++do
++	# Check to see whether the patch is on the ignore list.
++	if [ -f .git/cherry-ignore ] ; then
++		if grep -q ^$sha .git/cherry-ignore ; then
++			continue
++		fi
++	fi
++
++	# Check to see if it has already been picked over.
++	if grep -q ^$sha already_picked ; then
++		continue
++	fi
++
++	git log -n1 --pretty=oneline $sha | cat
++done
++
++rm -f already_picked
 diff --git a/docs/news.html b/docs/news.html
 index 541bde6..26e648b 100644
 --- a/docs/news.html
@@ -37,6 +69,34 @@ index d72c5bb..02b7324 100644
  </pre>
  
  
+diff --git a/src/gallium/drivers/nv30/nv30_miptree.c b/src/gallium/drivers/nv30/nv30_miptree.c
+index 7e67729..18e40e1 100644
+--- a/src/gallium/drivers/nv30/nv30_miptree.c
++++ b/src/gallium/drivers/nv30/nv30_miptree.c
+@@ -56,8 +56,7 @@ nv30_miptree_get_handle(struct pipe_screen *pscreen,
+    if (!mt || !mt->base.bo)
+       return FALSE;
+ 
+-   stride = util_format_get_stride(mt->base.base.format,
+-                                   mt->base.base.width0);
++   stride = mt->level[0].pitch;
+ 
+    return nouveau_screen_bo_get_handle(pscreen, mt->base.bo, stride, handle);
+ }
+diff --git a/src/gallium/drivers/nv50/nv50_miptree.c b/src/gallium/drivers/nv50/nv50_miptree.c
+index 7b8dfb8..70e8c77 100644
+--- a/src/gallium/drivers/nv50/nv50_miptree.c
++++ b/src/gallium/drivers/nv50/nv50_miptree.c
+@@ -133,8 +133,7 @@ nv50_miptree_get_handle(struct pipe_screen *pscreen,
+    if (!mt || !mt->base.bo)
+       return FALSE;
+ 
+-   stride = util_format_get_stride(mt->base.base.format,
+-                                   mt->base.base.width0);
++   stride = mt->level[0].pitch;
+ 
+    return nouveau_screen_bo_get_handle(pscreen,
+                                        mt->base.bo,
 diff --git a/src/mapi/glapi/gen/gl_API.xml b/src/mapi/glapi/gen/gl_API.xml
 index 751a18f..f83a7a7 100644
 --- a/src/mapi/glapi/gen/gl_API.xml
@@ -58,6 +118,35 @@ index 751a18f..f83a7a7 100644
      <function name="PolygonOffsetEXT" offset="assign">
          <param name="factor" type="GLfloat"/>
          <param name="bias" type="GLfloat"/>
+diff --git a/src/mesa/drivers/dri/i965/brw_misc_state.c b/src/mesa/drivers/dri/i965/brw_misc_state.c
+index 6dfa08e..4799af2 100644
+--- a/src/mesa/drivers/dri/i965/brw_misc_state.c
++++ b/src/mesa/drivers/dri/i965/brw_misc_state.c
+@@ -413,8 +413,10 @@ static void emit_depthbuffer(struct brw_context *brw)
+        * tile_x and tile_y to 0.  This is a temporary workaround until we come
+        * up with a better solution.
+        */
+-      tile_x &= ~7;
+-      tile_y &= ~7;
++      if (intel->gen >= 6) {
++         tile_x &= ~7;
++         tile_y &= ~7;
++      }
+ 
+       BEGIN_BATCH(len);
+       OUT_BATCH(_3DSTATE_DEPTH_BUFFER << 16 | (len - 2));
+diff --git a/src/mesa/drivers/dri/intel/intel_screen.c b/src/mesa/drivers/dri/intel/intel_screen.c
+index f96583c..00a1b01 100644
+--- a/src/mesa/drivers/dri/intel/intel_screen.c
++++ b/src/mesa/drivers/dri/intel/intel_screen.c
+@@ -26,6 +26,7 @@
+  **************************************************************************/
+ 
+ #include <errno.h>
++#include <time.h>
+ #include "main/glheader.h"
+ #include "main/context.h"
+ #include "main/framebuffer.h"
 diff --git a/src/mesa/main/context.c b/src/mesa/main/context.c
 index c0e6bc7..a21ae10 100644
 --- a/src/mesa/main/context.c
@@ -349,3 +438,27 @@ index 21646cc..38fa9fa 100644
         && dimensions > 1)
        return GL_INVALID_VALUE;
  
+diff --git a/src/mesa/state_tracker/st_cb_texture.c b/src/mesa/state_tracker/st_cb_texture.c
+index ed3bbc7..b8e2538 100644
+--- a/src/mesa/state_tracker/st_cb_texture.c
++++ b/src/mesa/state_tracker/st_cb_texture.c
+@@ -1130,11 +1130,18 @@ copy_image_data_to_texture(struct st_context *st,
+       /* Copy potentially with the blitter:
+        */
+       GLuint src_level;
+-      if (stImage->pt != stObj->pt)
++      if (stImage->pt->last_level == 0)
+          src_level = 0;
+       else
+          src_level = stImage->base.Level;
+ 
++      assert(src_level <= stImage->pt->last_level);
++      assert(u_minify(stImage->pt->width0, src_level) == stImage->base.Width);
++      assert(stImage->pt->target == PIPE_TEXTURE_1D_ARRAY ||
++             u_minify(stImage->pt->height0, src_level) == stImage->base.Height);
++      assert(stImage->pt->target == PIPE_TEXTURE_2D_ARRAY ||
++             u_minify(stImage->pt->depth0, src_level) == stImage->base.Depth);
++
+       st_texture_image_copy(st->pipe,
+                             stObj->pt, dstLevel,  /* dest texture, level */
+                             stImage->pt, src_level, /* src texture, level */

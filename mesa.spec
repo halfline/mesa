@@ -2,6 +2,14 @@
 %define rhel_no_hw_arches ppc ppc64 ppc64p7
 %endif
 
+# f17 support wayland 0.85, llvm 3.0 means no radeonsi
+%if 0%{?fedora} < 18
+%define min_wayland_version 0.85
+%else
+%define min_wayland_version 1.0
+%define with_radeonsi 1
+%endif
+
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
 %ifarch s390 s390x  %{?rhel_no_hw_arches}
 %define with_hardware 0
@@ -37,7 +45,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.0
-Release: 1%{?dist}
+Release: 4%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -48,19 +56,13 @@ Source0: ftp://ftp.freedesktop.org/pub/%{name}/%{version}/MesaLib-%{version}.tar
 #Source0: %{name}-%{gitdate}.tar.xz
 Source3: make-git-snapshot.sh
 
-Patch1: mesa-9.0-12-gd56ee24.patch
+Patch1: mesa-9.0-18-g5fe5aa8.patch
 
 #Patch7: mesa-7.1-link-shared.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
-
-# Revert libkms usage so we don't need to revive it
-Patch13: mesa-no-libkms.patch
-
-# Courtesy of Mageia cauldron:
-# Fix undefined syms: http://svnweb.mageia.org/packages/cauldron/mesa/current/SOURCES/0001-Fix-undefined-symbols-in-libOSMesa-and-libglapi.patch?revision=278531&view=co
-Patch101: mesa-undefined-symbols.patch
+Patch13: mesa-9.0-wayland-0.99.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -82,7 +84,7 @@ BuildRequires: elfutils
 BuildRequires: python
 %if %{with_hardware}
 %if 0%{?with_llvm}
-BuildRequires: llvm-devel >= 3.1
+BuildRequires: llvm-devel >= 3.0
 %endif
 %endif
 BuildRequires: libxml2-python
@@ -90,8 +92,8 @@ BuildRequires: libudev-devel
 BuildRequires: libtalloc-devel
 BuildRequires: bison flex
 %if !0%{?rhel}
-BuildRequires: pkgconfig(wayland-client)
-BuildRequires: pkgconfig(wayland-server)
+BuildRequires: pkgconfig(wayland-client) >= %{min_wayland_version}
+BuildRequires: pkgconfig(wayland-server) >= %{min_wayland_version}
 %endif
 BuildRequires: mesa-libGL-devel
 
@@ -267,8 +269,11 @@ Mesa shared glapi
 #setup -q -n mesa-%{gitdate}
 %patch1 -p1 -b .git
 %patch11 -p1 -b .nouveau
-%patch13 -p1 -b .no-libkms
-#patch101 -p1 -b .syms
+# yes, conditional patch.  sorry.
+%if 0%{?fedora} < 18
+%else
+%patch13 -p1 -b .wl099
+%endif
 
 # this fastpath is:
 # - broken with swrast classic
@@ -281,11 +286,16 @@ Mesa shared glapi
 #patch9 -p1 -b .shmget
 #patch12 -p1 -b .16bpp
 
-%build
-
 # default to dri (not xlib) for libGL on all arches
 # XXX please fix upstream
 sed -i 's/^default_driver.*$/default_driver="dri"/' configure.ac
+
+# need to use libdrm_nouveau2 on F17
+%if 0%{?fedora} < 18
+sed -i 's/\<libdrm_nouveau\>/&2/' configure.ac
+%endif
+
+%build
 
 autoreconf --install  
 
@@ -312,7 +322,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS"
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
 %if 0%{?with_llvm}
-    --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,radeonsi,nouveau,swrast \
+    --with-gallium-drivers=%{?with_vmware:svga,}r300,r600,%{?with_radeonsi:radeonsi,}nouveau,swrast \
     --enable-gallium-llvm \
     --with-llvm-shared-libs \
 %else
@@ -424,7 +434,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %{_libdir}/dri/r300_dri.so
 %{_libdir}/dri/r600_dri.so
-%if 0%{?with_llvm}
+%if 0%{?with_llvm} && 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_dri.so
 %endif
 %ifarch %{ix86} x86_64 ia64
@@ -546,6 +556,16 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Nov 01 2012 Adam Jackson <ajax@redhat.com> 9.0-4
+- mesa-9.0-18-g5fe5aa8: sync with 9.0 branch in git
+- Portability fixes for F17: old wayland, old llvm.
+
+* Sat Oct 27 2012 Dan Horák <dan[at]danny.cz> 9.0-3
+- gallium drivers must be set explicitely for s390(x) otherwise also r300, r600 and vmwgfx are built
+
+* Fri Oct 19 2012 Adam Jackson <ajax@redhat.com> 9.0-2
+- Rebuild for wayland 0.99
+
 * Wed Oct 10 2012 Adam Jackson <ajax@redhat.com> 9.0-1
 - Mesa 9.0
 - mesa-9.0-12-gd56ee24.patch: sync with 9.0 branch in git
@@ -556,7 +576,7 @@ rm -rf $RPM_BUILD_ROOT
 
 * Mon Oct 01 2012 Dan Horák <dan[at]danny.cz> 9.0-0.3
 - explicit BR: libGL-devel is required on s390(x), it's probbaly brought in indirectly on x86
-- gallium drivers must be set explicitely for s390(x) otherwise also r300, r600 and vmwgfx are also built
+- gallium drivers must be set explicitely for s390(x) otherwise also r300, r600 and vmwgfx are built
 
 * Mon Sep 24 2012 Adam Jackson <ajax@redhat.com> 9.0-0.2
 - Switch to swrast classic instead of softpipe for non-llvm arches
