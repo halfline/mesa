@@ -1,5 +1,4 @@
 %if 0%{?rhel}
-%define rhel_no_hw_arches ppc ppc64 ppc64p7
 %define with_private_llvm 1
 %else
 %define with_private_llvm 0
@@ -15,7 +14,7 @@
 %endif
 
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
-%ifarch s390 s390x  %{?rhel_no_hw_arches}
+%ifarch s390 s390x
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
@@ -49,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.0.1
-Release: 3%{?dist}
+Release: 5%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -68,6 +67,7 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch13: mesa-9.0.1-less-cxx-please.patch
+Patch14: mesa-9-r600g-limit-memory.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -292,6 +292,8 @@ Mesa shared glapi
 
 %patch13 -p1 -b .less-cpp
 
+%patch14 -p1 -b .r600g-limit
+
 # default to dri (not xlib) for libGL on all arches
 # XXX please fix upstream
 sed -i 's/^default_driver.*$/default_driver="dri"/' configure.ac
@@ -349,7 +351,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
 %endif
 %else
     --disable-gallium-llvm \
-    --with-gallium-drivers=swrast \
+    --with-gallium-drivers= \
     --enable-dri \
 %endif
     %{?dri_drivers}
@@ -574,6 +576,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Feb 26 2013 Adam Jackson <ajax@redhat.com> 9.0.1-5
+- Fix swrast on s390* to be classic not softpipe
+
+* Thu Jan 31 2013 Jerome Glisse <jglisse@redhat.com> 9.0.1-4
+- force r600g to stay in gpu memory limit
+
 * Thu Dec 20 2012 Adam Jackson <ajax@redhat.com> 9.0.1-3
 - mesa-9.0.1-22-gd0a9ab2.patch: Sync with git
 - Build with -fno-rtti -fno-exceptions, modest size and speed win
