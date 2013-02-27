@@ -1,5 +1,6 @@
 %if 0%{?rhel}
 %define with_private_llvm 1
+%define rhel_no_hw_arches ppc ppc64 ppc64p7
 %else
 %define with_private_llvm 0
 %define with_wayland 1
@@ -14,7 +15,7 @@
 %endif
 
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
-%ifarch s390 s390x
+%ifarch s390 s390x %{?rhel_no_hw_arches}
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
@@ -48,7 +49,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.0.1
-Release: 5%{?dist}
+Release: 5.1%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -576,6 +577,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Feb 27 2013 Daniel Mach <dmach@redhat.com> 9.0.1-5.1
+- Fix ppc* builds by using rhel_no_hw_arches macro.
+
 * Tue Feb 26 2013 Adam Jackson <ajax@redhat.com> 9.0.1-5
 - Fix swrast on s390* to be classic not softpipe
 
