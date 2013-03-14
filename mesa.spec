@@ -1,6 +1,6 @@
 %if 0%{?rhel}
-%define with_private_llvm 1
 %define rhel_no_hw_arches ppc ppc64 ppc64p7
+%define with_private_llvm 1
 %else
 %define with_private_llvm 0
 %define with_wayland 1
@@ -15,7 +15,7 @@
 %endif
 
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
-%ifarch s390 s390x %{?rhel_no_hw_arches}
+%ifarch s390 s390x  %{?rhel_no_hw_arches}
 %define with_hardware 0
 %define dri_drivers --with-dri-drivers=swrast
 %else
@@ -297,8 +297,6 @@ Mesa shared glapi
 #patch12 -p1 -b .16bpp
 
 #%patch13 -p1 -b .less-cpp
-
-%patch14 -p1 -b .r600g-limit
 
 # default to dri (not xlib) for libGL on all arches
 # XXX please fix upstream
