@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.1
-Release: 4%{?dist}
+Release: 6%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -73,7 +73,7 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 #Patch11: mesa-8.0-nouveau-tfp-blacklist.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch14: i965-hack-hiz-snb-fix.patch
-
+Patch15: 0001-llvmpipe-Work-without-sse2-if-llvm-is-new-enough.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -105,7 +105,6 @@ BuildRequires: llvm-devel >= 3.0
 %endif
 BuildRequires: libxml2-python
 BuildRequires: libudev-devel
-BuildRequires: libtalloc-devel
 BuildRequires: bison flex
 %if !0%{?rhel}
 BuildRequires: pkgconfig(wayland-client) >= %{min_wayland_version}
@@ -301,6 +300,7 @@ Mesa shared glapi
 
 # hack from chromium - awaiting real upstream fix
 %patch14 -p1 -b .snbfix
+%patch15 -p1 -b .sse2
 # default to dri (not xlib) for libGL on all arches
 # XXX please fix upstream
 sed -i 's/^default_driver.*$/default_driver="dri"/' configure.ac
@@ -349,6 +349,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-shared-glapi \
     --enable-gbm \
     --disable-opencl \
+    --enable-glx-tls \
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
 %if 0%{?with_llvm}
@@ -591,6 +592,12 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Apr 11 2013 Dave Airlie <airlied@redhat.com> 9.1-6
+- enable glx tls for glamor to work properly
+
+* Thu Apr 04 2013 Adam Jackson <ajax@redhat.com> 9.1-5
+- Enable llvmpipe even on non-SSE2 machines (#909473)
+
 * Tue Mar 26 2013 Adam Jackson <ajax@redhat.com> 9.1-4
 - Fix build with private LLVM
 
