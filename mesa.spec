@@ -6,14 +6,8 @@
 %define with_wayland 1
 %endif
 
-# f17 support wayland 0.85, llvm 3.0 means no radeonsi
-%if 0%{?fedora} < 18
-%define min_wayland_version 0.85
-%else
-%define min_wayland_version 1.0
 %ifnarch ppc
 %define with_radeonsi 1
-%endif
 %endif
 
 %ifarch %{arm}
@@ -48,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20130902
+%define gitdate 20131023
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -284,6 +278,7 @@ Mesa shared glapi
 %prep
 #setup -q -n Mesa-%{version}%{?snapshot}
 %setup -q -n mesa-%{gitdate}
+# make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
 
@@ -600,6 +595,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Oct 23 2013 Jerome Glisse <jglisse@redhat.com> 9.2-2.20131023
+- 9.2 upstream release + fixes from git branch
+
 * Mon Sep 02 2013 Dave Airlie <airlied@redhat.com> 9.2-1.20130902
 - 9.2 upstream release + fixes from git branch
 
