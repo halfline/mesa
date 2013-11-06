@@ -21,7 +21,7 @@
 %define with_llvm 1
 %endif
 
-%ifarch s390 s390x
+%ifarch s390 s390x aarch64
 %define with_hardware 0
 %ifarch s390
 %define base_drivers swrast
@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2
-Release: 3.%{gitdate}%{?dist}
+Release: 4.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -597,6 +597,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Nov 06 2013 Dave Airlie <airlied@redhat.com> 9.2-4.20131023
+- fix build for now on aarch64
+
 * Thu Oct 31 2013 Jerome Glisse <jglisse@redhat.com> 9.2-3.20131023
 - Add missing kaveri pci id
 
