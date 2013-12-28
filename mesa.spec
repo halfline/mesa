@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -597,6 +597,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 9.2-5.20131023
+- Mass rebuild 2013-12-27
+
 * Wed Nov 06 2013 Dave Airlie <airlied@redhat.com> 9.2-4.20131023
 - fix build for now on aarch64
 
