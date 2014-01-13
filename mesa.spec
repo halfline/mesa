@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20131023
+%define gitdate 20131218
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 9.2
-Release: 5.%{gitdate}%{?dist}
+Version: 9.2.5
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -71,6 +71,10 @@ Patch15: mesa-9.2-hardware-float.patch
 Patch16: mesa-9.2-no-useless-vdpau.patch
 Patch20: mesa-9.2-evergreen-big-endian.patch
 Patch21: add-kaveri-berlin-pciid.patch
+Patch22: 0001-r600g-fix-SUMO2-pci-id.patch
+
+# fix copy sub buffer on swrast
+Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -119,6 +123,7 @@ Mesa
 Summary: Mesa libGL runtime libraries and DRI drivers
 Group: System Environment/Libraries
 Provides: libGL
+Requires: mesa-libglapi = %{version}-%{release}
 
 %description libGL
 Mesa libGL runtime library.
@@ -126,6 +131,7 @@ Mesa libGL runtime library.
 %package libEGL
 Summary: Mesa libEGL runtime libraries
 Group: System Environment/Libraries
+Requires: mesa-libgbm = %{version}-%{release}
 
 %description libEGL
 Mesa libEGL runtime libraries
@@ -133,6 +139,7 @@ Mesa libEGL runtime libraries
 %package libGLES
 Summary: Mesa libGLES runtime libraries
 Group: System Environment/Libraries
+Requires: mesa-libglapi = %{version}-%{release}
 
 %description libGLES
 Mesa GLES runtime libraries
@@ -196,6 +203,7 @@ Mesa libGLES development package
 Summary: Mesa offscreen rendering libraries
 Group: System Environment/Libraries
 Provides: libOSMesa
+Requires: mesa-libglapi = %{version}-%{release}
 
 %description libOSMesa
 Mesa offscreen rendering libraries
@@ -214,6 +222,7 @@ Mesa offscreen rendering development package
 Summary: Mesa gbm library
 Group: System Environment/Libraries
 Provides: libgbm
+Requires: mesa-libglapi = %{version}-%{release}
 
 %description libgbm
 Mesa gbm runtime library.
@@ -298,6 +307,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch16 -p1 -b .vdpau
 %patch20 -p1 -b .egbe
 %patch21 -p1 -b .kaveri
+%patch22 -p1 -b .sumo2
+%patch30 -p1 -b .copysub
 
 %if 0%{with_private_llvm}
 sed -i 's/llvm-config/mesa-private-llvm-config-%{__isa_bits}/g' configure.ac
@@ -597,6 +608,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jan 13 2014 Dave Airlie <airlied@redhat.com> 9.2.5-1.20131218
+- rebase to final 9.2.5 release + copy sub buffer enable for swrast
+
 * Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 9.2-5.20131023
 - Mass rebuild 2013-12-27
 

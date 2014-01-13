@@ -1,0 +1,29 @@
+From e2d53fac1c5b18f5c9e95d39d4e2be4703b0b363 Mon Sep 17 00:00:00 2001
+From: Alex Deucher <alexander.deucher@amd.com>
+Date: Tue, 24 Dec 2013 15:22:31 -0500
+Subject: [PATCH] r600g: fix SUMO2 pci id
+
+0x9649 is sumo2, not sumo.
+
+Signed-off-by: Alex Deucher <alexander.deucher@amd.com>
+CC: "9.2" "10.0" <mesa-stable@lists.freedesktop.org>
+---
+ include/pci_ids/r600_pci_ids.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/pci_ids/r600_pci_ids.h b/include/pci_ids/r600_pci_ids.h
+index 5036a83..533c9f3 100644
+--- a/include/pci_ids/r600_pci_ids.h
++++ b/include/pci_ids/r600_pci_ids.h
+@@ -208,7 +208,7 @@ CHIPSET(0x9644, SUMO2_9644, SUMO2)
+ CHIPSET(0x9645, SUMO2_9645, SUMO2)
+ CHIPSET(0x9647, SUMO_9647,  SUMO)
+ CHIPSET(0x9648, SUMO_9648,  SUMO)
+-CHIPSET(0x9649, SUMO_9649,  SUMO)
++CHIPSET(0x9649, SUMO2_9649, SUMO2)
+ CHIPSET(0x964a, SUMO_964A,  SUMO)
+ CHIPSET(0x964b, SUMO_964B,  SUMO)
+ CHIPSET(0x964c, SUMO_964C,  SUMO)
+-- 
+1.8.4.2
+
