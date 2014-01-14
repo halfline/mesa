@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2.5
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -156,7 +156,7 @@ Mesa driver filesystem
 Summary: Mesa-based DRI drivers
 Group: User Interface/X Hardware Support
 Requires: mesa-filesystem%{?_isa}
-Obsoletes: mesa-dri-drivers-dri1 < 7.12
+Obsoletes: mesa-dri1-drivers < 7.12
 Obsoletes: mesa-dri-llvmcore <= 7.12
 %description dri-drivers
 Mesa-based DRI drivers.
@@ -608,6 +608,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Jan 14 2014 Dave Airlie <airlied@redhat.com> 9.2.5-2.20131218
+- obsolete correct dri1 drivers package (#1043903)
+
 * Mon Jan 13 2014 Dave Airlie <airlied@redhat.com> 9.2.5-1.20131218
 - rebase to final 9.2.5 release + copy sub buffer enable for swrast
 
