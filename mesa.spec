@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2.5
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -608,6 +608,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Jan 24 2014 Daniel Mach <dmach@redhat.com> - 9.2.5-3.20131218
+- Mass rebuild 2014-01-24
+
 * Tue Jan 14 2014 Dave Airlie <airlied@redhat.com> 9.2.5-2.20131218
 - obsolete correct dri1 drivers package (#1043903)
 
