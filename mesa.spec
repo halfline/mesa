@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 9.2.5
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -75,6 +75,9 @@ Patch22: 0001-r600g-fix-SUMO2-pci-id.patch
 
 # fix copy sub buffer on swrast
 Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
+
+# fix GLX defaults against binary
+Patch40: 0001-glx-Fix-the-default-values-for-GLXFBConfig-attribute.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -309,6 +312,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch21 -p1 -b .kaveri
 %patch22 -p1 -b .sumo2
 %patch30 -p1 -b .copysub
+%patch40 -p1 -b .fixglx
 
 %if 0%{with_private_llvm}
 sed -i 's/llvm-config/mesa-private-llvm-config-%{__isa_bits}/g' configure.ac
@@ -608,6 +612,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Feb 24 2014 Dave Airlie <airlied@redhat.com> 9.2.5-5.20131218
+- fix GLX attribs against binary drivers (#1064117)
+
 * Wed Feb 12 2014 Adam Jackson <ajax@redhat.com> 9.2.5-4.20131218
 - Mass rebuild
 
