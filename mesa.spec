@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20131218
+%define gitdate 20140827
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 9.2.5
-Release: 5.%{gitdate}%{?dist}
+Version: 10.2.5
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -65,6 +65,8 @@ Source3: make-git-snapshot.sh
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1: nv50-fix-build.patch
+Patch2: 0001-Revert-radeon-compute-Report-a-value-for-PIPE_SHADER.patch
+Patch3: 0001-Revert-radeonsi-compute-Stop-leaking-the-input-buffe.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
@@ -79,6 +81,7 @@ Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
 # fix GLX defaults against binary
 Patch40: 0001-glx-Fix-the-default-values-for-GLXFBConfig-attribute.patch
 
+Patch50: fix-so-name.patch
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
@@ -294,6 +297,8 @@ Mesa shared glapi
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
+%patch2 -p1 -b .revert
+%patch3 -p1 -b .revert2
 
 # this fastpath is:
 # - broken with swrast classic
@@ -307,18 +312,19 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 #patch12 -p1 -b .16bpp
 
 %patch15 -p1 -b .hwfloat
-%patch16 -p1 -b .vdpau
-%patch20 -p1 -b .egbe
-%patch21 -p1 -b .kaveri
-%patch22 -p1 -b .sumo2
-%patch30 -p1 -b .copysub
-%patch40 -p1 -b .fixglx
+#%patch16 -p1 -b .vdpau
+#%patch20 -p1 -b .egbe
+#%patch21 -p1 -b .kaveri
+#%patch22 -p1 -b .sumo2
+#%patch30 -p1 -b .ce5opysub
+#%patch40 -p1 -b .h5ixglx
 
 %if 0%{with_private_llvm}
-sed -i 's/llvm-config/mesa-private-llvm-config-%{__isa_bits}/g' configure.ac
+sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
 sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
 %endif
 
+%patch50 -p1 -b .mesa
 # need to use libdrm_nouveau2 on F17
 %if !0%{?rhel}
 %if 0%{?fedora} < 18
@@ -354,6 +360,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-gles2 \
     --disable-gallium-egl \
     --disable-xvmc \
+    --disable-dri3 \
     %{?with_vdpau:--enable-vdpau} \
     --with-egl-platforms=x11,drm%{?with_wayland:,wayland} \
     --enable-shared-glapi \
@@ -396,6 +403,8 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/vdpau/*.so
 
 # strip out useless headers
 rm -f $RPM_BUILD_ROOT%{_includedir}/GL/w*.h
+
+rm -rf $RPM_BUILD_ROOT%{_libdir}/gallium-pipe/
 
 # remove .la files
 find $RPM_BUILD_ROOT -name \*.la | xargs rm -f
@@ -492,15 +501,11 @@ rm -rf $RPM_BUILD_ROOT
 %if 0%{?with_vmware}
 %{_libdir}/dri/vmwgfx_dri.so
 %endif
-%{_libdir}/libdricore*.so*
 %endif
 # this is funky; it doesn't get built for gallium drivers, so it doesn't
 # exist on s390x where swrast is llvmpipe, but does exist on s390 where
 # swrast is classic mesa.  this seems like a bug?  in that it probably
 # means the gallium drivers are linking dricore statically?  fixme.
-%ifarch s390
-%{_libdir}/libdricore*.so*
-%endif
 %{_libdir}/dri/swrast_dri.so
 
 %if %{with_hardware}
@@ -550,6 +555,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/GLES2/gl2ext.h
 %{_includedir}/GLES3/gl3platform.h
 %{_includedir}/GLES3/gl3.h
+%{_includedir}/GLES3/gl31.h
 %{_includedir}/GLES3/gl3ext.h
 %{_libdir}/pkgconfig/glesv2.pc
 %{_libdir}/libGLESv2.so
@@ -596,8 +602,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc docs/COPYING
 %if %{with_hardware}
-%{_libdir}/libxatracker.so.1
-%{_libdir}/libxatracker.so.1.*
+%{_libdir}/libxatracker.so.2
+%{_libdir}/libxatracker.so.2.*
 %endif
 
 %files libxatracker-devel
@@ -612,6 +618,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Aug 27 2014 Dave Airlie <airlied@redhat.com> 10.2.5-1.20140827
+- rebase to 10.2.5 (well .6 in branch has hawaii fixes)
+
 * Mon Feb 24 2014 Dave Airlie <airlied@redhat.com> 9.2.5-5.20131218
 - fix GLX attribs against binary drivers (#1064117)
 

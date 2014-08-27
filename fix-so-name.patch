@@ -1,0 +1,12 @@
+diff -up mesa-20140827/configure.ac.mesa mesa-20140827/configure.ac
+--- mesa-20140827/configure.ac.mesa	2014-08-27 15:19:12.368830514 +1000
++++ mesa-20140827/configure.ac	2014-08-27 15:19:15.087830514 +1000
+@@ -1922,7 +1922,7 @@ if test "x$MESA_LLVM" != x0; then
+ 
+     if test "x$enable_llvm_shared_libs" = xyes; then
+         dnl We can't use $LLVM_VERSION because it has 'svn' stripped out,
+-        LLVM_SO_NAME=LLVM-`$LLVM_CONFIG --version`-mesa
++        LLVM_SO_NAME=LLVM-$LLVM_VERSION_MAJOR.$LLVM_VERSION_MINOR-mesa
+         AS_IF([test -f "$LLVM_LIBDIR/lib$LLVM_SO_NAME.so"], [llvm_have_one_so=yes])
+ 
+         if test "x$llvm_have_one_so" = xyes; then
