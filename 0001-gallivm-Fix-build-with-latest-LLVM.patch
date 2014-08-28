@@ -1,0 +1,44 @@
+From e28136343b6aa7dfff8ec85f6463574d6625b5a6 Mon Sep 17 00:00:00 2001
+From: Jan Vesely <jan.vesely@rutgers.edu>
+Date: Mon, 4 Aug 2014 18:50:02 -0400
+Subject: [PATCH] gallivm: Fix build with latest LLVM
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Signed-off-by: Jan Vesely <jan.vesely@rutgers.edu>
+Reviewed-and-Tested-by: Michel Dänzer <michel.daenzer@amd.com>
+---
+ src/gallium/auxiliary/gallivm/lp_bld_debug.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/src/gallium/auxiliary/gallivm/lp_bld_debug.cpp b/src/gallium/auxiliary/gallivm/lp_bld_debug.cpp
+index 413a0c2..b6b52c8 100644
+--- a/src/gallium/auxiliary/gallivm/lp_bld_debug.cpp
++++ b/src/gallium/auxiliary/gallivm/lp_bld_debug.cpp
+@@ -34,6 +34,10 @@
+ #include <llvm/Support/Format.h>
+ #include <llvm/Support/MemoryObject.h>
+ 
++#if HAVE_LLVM >= 0x0306
++#include <llvm/Target/TargetSubtargetInfo.h>
++#endif
++
+ #include <llvm/Support/TargetRegistry.h>
+ #include <llvm/MC/MCSubtargetInfo.h>
+ 
+@@ -271,7 +275,11 @@ disassemble(const void* func, llvm::raw_ostream & Out)
+ #endif
+    OwningPtr<TargetMachine> TM(T->createTargetMachine(Triple, sys::getHostCPUName(), "", options));
+ 
++#if HAVE_LLVM >= 0x0306
++   const TargetInstrInfo *TII = TM->getSubtargetImpl()->getInstrInfo();
++#else
+    const TargetInstrInfo *TII = TM->getInstrInfo();
++#endif
+ 
+    /*
+     * Wrap the data in a MemoryObject
+-- 
+2.1.0
+

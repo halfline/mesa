@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.2.5
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -82,6 +82,11 @@ Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
 Patch40: 0001-glx-Fix-the-default-values-for-GLXFBConfig-attribute.patch
 
 Patch50: fix-so-name.patch
+
+# fix build against llvm 3.5
+Patch60: 0001-gallivm-Fix-build-after-LLVM-commit-211259.patch
+Patch61: 0001-gallivm-Fix-build-with-latest-LLVM.patch
+
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
@@ -325,6 +330,10 @@ sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
 %endif
 
 %patch50 -p1 -b .mesa
+
+%patch60 -p1
+#patch61 -p1
+
 # need to use libdrm_nouveau2 on F17
 %if !0%{?rhel}
 %if 0%{?fedora} < 18
@@ -618,6 +627,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Aug 27 2014 Adam Jackson <ajax@redhat.com> 10.2.5-2.20140827
+- Rebuild against llvm 3.5.0rc3
+
 * Wed Aug 27 2014 Dave Airlie <airlied@redhat.com> 10.2.5-1.20140827
 - rebase to 10.2.5 (well .6 in branch has hawaii fixes)
 
