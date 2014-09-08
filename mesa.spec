@@ -87,6 +87,9 @@ Patch50: fix-so-name.patch
 Patch60: 0001-gallivm-Fix-build-after-LLVM-commit-211259.patch
 Patch61: 0001-gallivm-Fix-build-with-latest-LLVM.patch
 
+# ppc64le enablement
+Patch70: 0001-gallivm-Fix-Altivec-pack-intrinsics-for-little-endia.patch
+
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
@@ -333,6 +336,7 @@ sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
 
 %patch60 -p1
 #patch61 -p1
+%patch70 -p1
 
 # need to use libdrm_nouveau2 on F17
 %if !0%{?rhel}
@@ -627,6 +631,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Sep 08 2014 Adam Jackson <ajax@redhat.com> 10.2.5-2.20140827
+- Backport a ppc64le fix
+
 * Wed Aug 27 2014 Adam Jackson <ajax@redhat.com> 10.2.5-2.20140827
 - Rebuild against llvm 3.5.0rc3
 
