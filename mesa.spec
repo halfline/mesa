@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.2.5
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -631,7 +631,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Mon Sep 08 2014 Adam Jackson <ajax@redhat.com> 10.2.5-2.20140827
+* Tue Sep 09 2014 Adam Jackson <ajax@redhat.com> 10.2.5-3.20140827
 - Backport a ppc64le fix
 
 * Wed Aug 27 2014 Adam Jackson <ajax@redhat.com> 10.2.5-2.20140827
