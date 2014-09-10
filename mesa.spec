@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20140827
+%define gitdate 20140910
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 10.2.5
-Release: 3.%{gitdate}%{?dist}
+Version: 10.2.7
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -65,8 +65,6 @@ Source3: make-git-snapshot.sh
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1: nv50-fix-build.patch
-Patch2: 0001-Revert-radeon-compute-Report-a-value-for-PIPE_SHADER.patch
-Patch3: 0001-Revert-radeonsi-compute-Stop-leaking-the-input-buffe.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
@@ -82,10 +80,6 @@ Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
 Patch40: 0001-glx-Fix-the-default-values-for-GLXFBConfig-attribute.patch
 
 Patch50: fix-so-name.patch
-
-# fix build against llvm 3.5
-Patch60: 0001-gallivm-Fix-build-after-LLVM-commit-211259.patch
-Patch61: 0001-gallivm-Fix-build-with-latest-LLVM.patch
 
 # ppc64le enablement
 Patch70: 0001-gallivm-Fix-Altivec-pack-intrinsics-for-little-endia.patch
@@ -305,8 +299,6 @@ Mesa shared glapi
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
-%patch2 -p1 -b .revert
-%patch3 -p1 -b .revert2
 
 # this fastpath is:
 # - broken with swrast classic
@@ -334,8 +326,6 @@ sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
 
 %patch50 -p1 -b .mesa
 
-%patch60 -p1
-#patch61 -p1
 %patch70 -p1
 
 # need to use libdrm_nouveau2 on F17
@@ -631,6 +621,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Sep 10 2014 Dave Airlie <airlied@redhat.com> 10.2.7-1.20140910
+- rebase to latest 10.2.x branch - fixes HSW gnome-shell
+
 * Tue Sep 09 2014 Adam Jackson <ajax@redhat.com> 10.2.5-3.20140827
 - Backport a ppc64le fix
 
