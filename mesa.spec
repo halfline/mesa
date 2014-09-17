@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.2.7
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -86,6 +86,9 @@ Patch70: 0001-gallivm-Fix-Altivec-pack-intrinsics-for-little-endia.patch
 
 # 1112753 - backport some of the upstream format fixes.
 Patch80: mesa-big-endian-fixes.patch
+
+# upstream backport to fix llvmpipe on older x86
+Patch81: mesa-llvm-3.5-cpu-fix.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -332,6 +335,8 @@ sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
 %patch70 -p1
 
 %patch80 -p1 -b .bigendian
+
+%patch81 -p1 -b .cpu
 
 # need to use libdrm_nouveau2 on F17
 %if !0%{?rhel}
@@ -626,6 +631,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Sep 17 2014 Dave Airlie <airlied@redhat.com> 10.2.7-3.20140910
+- backport regression fix for old x86 cpus
+
 * Wed Sep 17 2014 Dave Airlie <airlied@redhat.com> 10.2.7-2.20140910
 - backport upstream big endian format fixes
 
