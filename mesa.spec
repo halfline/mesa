@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.2.7
-Release: 3.%{gitdate}%{?dist}
+Release: 4.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -68,18 +68,7 @@ Patch1: nv50-fix-build.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
-Patch16: mesa-9.2-no-useless-vdpau.patch
-Patch20: mesa-9.2-evergreen-big-endian.patch
-Patch21: add-kaveri-berlin-pciid.patch
-Patch22: 0001-r600g-fix-SUMO2-pci-id.patch
-
-# fix copy sub buffer on swrast
-Patch30: 0001-swrast-gallium-classic-add-MESA_copy_sub_buffer-supp.patch
-
-# fix GLX defaults against binary
-Patch40: 0001-glx-Fix-the-default-values-for-GLXFBConfig-attribute.patch
-
-Patch50: fix-so-name.patch
+Patch20: mesa-10.2-evergreen-big-endian.patch
 
 # ppc64le enablement
 Patch70: 0001-gallivm-Fix-Altivec-pack-intrinsics-for-little-endia.patch
@@ -318,25 +307,15 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 #patch12 -p1 -b .16bpp
 
 %patch15 -p1 -b .hwfloat
-#%patch16 -p1 -b .vdpau
-#%patch20 -p1 -b .egbe
-#%patch21 -p1 -b .kaveri
-#%patch22 -p1 -b .sumo2
-#%patch30 -p1 -b .ce5opysub
-#%patch40 -p1 -b .h5ixglx
+%patch20 -p1 -b .egbe
+%patch70 -p1 -b .powerle
+%patch80 -p1 -b .bigendian
+%patch81 -p1 -b .cpu
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
-sed -i 's/`$LLVM_CONFIG --version`/&-mesa/' configure.ac
+sed -i 's/`$LLVM_CONFIG --version`/$LLVM_VERSION_MAJOR.$LLVM_VERSION_MINOR-mesa/' configure.ac
 %endif
-
-%patch50 -p1 -b .mesa
-
-%patch70 -p1
-
-%patch80 -p1 -b .bigendian
-
-%patch81 -p1 -b .cpu
 
 # need to use libdrm_nouveau2 on F17
 %if !0%{?rhel}
@@ -631,6 +610,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Jan 28 2015 Adam Jackson <ajax@redhat.com> 10.2.7-4.20140910
+- Fix color clears and colorformat selection on big-endian evergreen
+
 * Wed Sep 17 2014 Dave Airlie <airlied@redhat.com> 10.2.7-3.20140910
 - backport regression fix for old x86 cpus
 
