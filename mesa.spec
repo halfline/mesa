@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.2.7
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -100,7 +100,7 @@ BuildRequires: python
 BuildRequires: gettext
 %if 0%{?with_llvm}
 %if 0%{?with_private_llvm}
-BuildRequires: mesa-private-llvm-devel
+BuildRequires: mesa-private-llvm-devel >= 3.5
 %else
 BuildRequires: llvm-devel >= 3.0
 %endif
@@ -610,7 +610,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Jan 28 2015 Adam Jackson <ajax@redhat.com> 10.2.7-4.20140910
+* Wed Jan 28 2015 Adam Jackson <ajax@redhat.com> 10.2.7-5.20140910
 - Fix color clears and colorformat selection on big-endian evergreen
 
 * Wed Sep 17 2014 Dave Airlie <airlied@redhat.com> 10.2.7-3.20140910
