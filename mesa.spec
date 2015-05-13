@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20140910
+%define gitdate 20150521
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 10.2.7
-Release: 5.%{gitdate}%{?dist}
+Version: 10.6.0
+Release: 0.1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -70,21 +70,12 @@ Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
 
-# ppc64le enablement
-Patch70: 0001-gallivm-Fix-Altivec-pack-intrinsics-for-little-endia.patch
-
-# 1112753 - backport some of the upstream format fixes.
-Patch80: mesa-big-endian-fixes.patch
-
-# upstream backport to fix llvmpipe on older x86
-Patch81: mesa-llvm-3.5-cpu-fix.patch
-
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
-BuildRequires: libdrm-devel >= 2.4.42
+BuildRequires: libdrm-devel >= 2.4.60
 BuildRequires: libXxf86vm-devel
 BuildRequires: expat-devel
 BuildRequires: xorg-x11-proto-devel
@@ -95,12 +86,14 @@ BuildRequires: libXfixes-devel
 BuildRequires: libXdamage-devel
 BuildRequires: libXi-devel
 BuildRequires: libXmu-devel
+BuildRequires: libxshmfence-devel
 BuildRequires: elfutils
 BuildRequires: python
+BuildRequires: python-mako
 BuildRequires: gettext
 %if 0%{?with_llvm}
 %if 0%{?with_private_llvm}
-BuildRequires: mesa-private-llvm-devel >= 3.5
+BuildRequires: mesa-private-llvm-devel >= 3.6
 %else
 BuildRequires: llvm-devel >= 3.0
 %endif
@@ -308,9 +301,6 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 %patch20 -p1 -b .egbe
-%patch70 -p1 -b .powerle
-%patch80 -p1 -b .bigendian
-%patch81 -p1 -b .cpu
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -352,7 +342,6 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-gles2 \
     --disable-gallium-egl \
     --disable-xvmc \
-    --disable-dri3 \
     %{?with_vdpau:--enable-vdpau} \
     --with-egl-platforms=x11,drm%{?with_wayland:,wayland} \
     --enable-shared-glapi \
@@ -499,6 +488,7 @@ rm -rf $RPM_BUILD_ROOT
 # swrast is classic mesa.  this seems like a bug?  in that it probably
 # means the gallium drivers are linking dricore statically?  fixme.
 %{_libdir}/dri/swrast_dri.so
+%{_libdir}/dri/kms_swrast_dri.so
 
 %if %{with_hardware}
 %if 0%{?with_vdpau}
@@ -515,6 +505,7 @@ rm -rf $RPM_BUILD_ROOT
 %files libGL-devel
 %defattr(-,root,root,-)
 %{_includedir}/GL/gl.h
+%{_includedir}/GL/glcorearb.h
 %{_includedir}/GL/gl_mangle.h
 %{_includedir}/GL/glext.h
 %{_includedir}/GL/glx.h
@@ -533,6 +524,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/EGL/eglext.h
 %{_includedir}/EGL/egl.h
 %{_includedir}/EGL/eglmesaext.h
+%{_includedir}/EGL/eglextchromium.h
 %{_includedir}/EGL/eglplatform.h
 %dir %{_includedir}/KHR
 %{_includedir}/KHR/khrplatform.h
@@ -610,6 +602,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu May 21 2015 Dave Airlie <airlied@redhat.com> 10.6.0-0.1.20150521
+- mesa 10.6.0-rc1
+
 * Wed Jan 28 2015 Adam Jackson <ajax@redhat.com> 10.2.7-5.20140910
 - Fix color clears and colorformat selection on big-endian evergreen
 
