@@ -345,7 +345,6 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-egl \
     --disable-gles1 \
     --enable-gles2 \
-    --disable-gallium-egl \
     --disable-xvmc \
     %{?with_vdpau:--enable-vdpau} \
     --with-egl-platforms=x11,drm%{?with_wayland:,wayland} \
@@ -493,7 +492,9 @@ rm -rf $RPM_BUILD_ROOT
 # swrast is classic mesa.  this seems like a bug?  in that it probably
 # means the gallium drivers are linking dricore statically?  fixme.
 %{_libdir}/dri/swrast_dri.so
+%if 0%{?with_llvm}
 %{_libdir}/dri/kms_swrast_dri.so
+%endif
 
 %if %{with_hardware}
 %if 0%{?with_vdpau}
