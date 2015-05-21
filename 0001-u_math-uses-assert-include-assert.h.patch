@@ -1,0 +1,27 @@
+From 8c6652fbaa345cd395fe44978072a604a9859fdb Mon Sep 17 00:00:00 2001
+From: Dave Airlie <airlied@redhat.com>
+Date: Thu, 21 May 2015 11:23:06 +1000
+Subject: [PATCH] u_math: uses assert, include assert.h
+
+this fixes a build problem found internally on RHEL s390.
+
+Signed-off-by: Dave Airlie <airlied@redhat.com>
+---
+ src/gallium/auxiliary/util/u_math.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/gallium/auxiliary/util/u_math.h b/src/gallium/auxiliary/util/u_math.h
+index 3d27a59..58070a9 100644
+--- a/src/gallium/auxiliary/util/u_math.h
++++ b/src/gallium/auxiliary/util/u_math.h
+@@ -42,6 +42,7 @@
+ #include "pipe/p_compiler.h"
+ 
+ #include "c99_math.h"
++#include <assert.h>
+ #include <float.h>
+ #include <stdarg.h>
+ 
+-- 
+1.9.3
+
