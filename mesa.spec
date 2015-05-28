@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20150521
+%define gitdate 20150528
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.6.0
-Release: 0.2.%{gitdate}%{?dist}
+Release: 0.3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -69,9 +69,6 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-
-# fix build - upstream before 10.6 final
-Patch30: 0001-u_math-uses-assert-include-assert.h.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -304,8 +301,6 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 %patch20 -p1 -b .egbe
-
-%patch30 -p1 -b .assert
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -608,6 +603,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu May 28 2015 Dave Airlie <airlied@redhat.com> 10.6.0-0.3.20150528
+- mesa 10.6.0-rc2
+
 * Fri May 22 2015 Dave Airlie <airlied@redhat.com> 10.6.0-0.2.20150521
 - rebuild for ppc64le relro issue
 
