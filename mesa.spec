@@ -42,12 +42,12 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20150616
+%define gitdate 20150824
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 10.6.0
+Version: 10.6.5
 Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
@@ -603,6 +603,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Aug 24 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-1.20150824
+- mesa 10.6.5 release
+
 * Tue Jun 16 2015 Dave Airlie <airlied@redhat.com> 10.6.0-1.20150616
 - mesa 10.6.0 release
 
