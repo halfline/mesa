@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 10.6.5
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -69,6 +69,7 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
+Patch25: mesa-10.6-llvmpipe-imm-fix-power.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -301,6 +302,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 %patch20 -p1 -b .egbe
+%patch25 -p1 -b .llvmimm
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -603,6 +605,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Sep 16 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-2.20150916
+- Fix llvmpipe implicit conversion for POWER (#1261988)
+
 * Mon Aug 24 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-1.20150824
 - mesa 10.6.5 release
 

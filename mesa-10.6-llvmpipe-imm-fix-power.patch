@@ -1,0 +1,41 @@
+From 8e45b5eecce4233389bb2a50a142d37e2676c71f Mon Sep 17 00:00:00 2001
+From: Oded Gabbay <oded.gabbay@gmail.com>
+Date: Thu, 3 Sep 2015 19:00:26 +0300
+Subject: [PATCH] llvmpipe: convert double to long long instead of unsigned
+ long long
+
+round(val*dscale) produces a double result, as val and dscale are double.
+However, LLVMConstInt receives unsigned long long, so there is an
+implicit conversion from double to unsigned long long.
+This is an undefined behavior. Therefore, we need to first explicitly
+convert the round result to long long, and then let the compiler handle
+conversion from that to unsigned long long.
+
+This bug manifests itself in POWER, where all IMM values of -1 are being
+converted to 0 implicitly, causing a wrong LLVM IR output.
+
+Signed-off-by: Oded Gabbay <oded.gabbay@gmail.com>
+CC: "10.6 11.0" <mesa-stable@lists.freedesktop.org>
+Reviewed-by: Tom Stellard <thomas.stellard@amd.com>
+Reviewed-by: Roland Scheidegger <sroland@vmware.com>
+(cherry picked from commit 4f2290d1612569686284609059d29a85c9de67cf)
+---
+ src/gallium/auxiliary/gallivm/lp_bld_const.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/gallium/auxiliary/gallivm/lp_bld_const.c b/src/gallium/auxiliary/gallivm/lp_bld_const.c
+index 0f5a8f8..9cd7c55 100644
+--- a/src/gallium/auxiliary/gallivm/lp_bld_const.c
++++ b/src/gallium/auxiliary/gallivm/lp_bld_const.c
+@@ -311,7 +311,7 @@ lp_build_const_elem(struct gallivm_state *gallivm,
+    else {
+       double dscale = lp_const_scale(type);
+ 
+-      elem = LLVMConstInt(elem_type, round(val*dscale), 0);
++      elem = LLVMConstInt(elem_type, (long long) round(val*dscale), 0);
+    }
+ 
+    return elem;
+-- 
+2.4.3
+
