@@ -42,7 +42,7 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20150916
+%define gitdate 20150824
 #% define snapshot 
 
 Summary: Mesa graphics libraries
@@ -605,7 +605,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Wed Sep 16 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-2.20150916
+* Wed Sep 16 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-2.20150824
 - Fix llvmpipe implicit conversion for POWER (#1261988)
 
 * Mon Aug 24 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-1.20150824
