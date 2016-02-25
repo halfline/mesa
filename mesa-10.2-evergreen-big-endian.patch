@@ -1,8 +1,7 @@
-diff --git a/src/gallium/drivers/r600/evergreen_state.c b/src/gallium/drivers/r600/evergreen_state.c
-index f0d4503..c617425 100644
---- a/src/gallium/drivers/r600/evergreen_state.c
-+++ b/src/gallium/drivers/r600/evergreen_state.c
-@@ -219,7 +219,7 @@ static bool r600_is_sampler_format_supported(struct pipe_screen *screen, enum pi
+diff -up mesa-20160225/src/gallium/drivers/r600/evergreen_state.c.egbe mesa-20160225/src/gallium/drivers/r600/evergreen_state.c
+--- mesa-20160225/src/gallium/drivers/r600/evergreen_state.c.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/r600/evergreen_state.c	2016-02-25 13:06:47.351154059 +1000
+@@ -219,7 +219,7 @@ static bool r600_is_sampler_format_suppo
  static bool r600_is_colorbuffer_format_supported(enum chip_class chip, enum pipe_format format)
  {
  	return r600_translate_colorformat(chip, format) != ~0U &&
@@ -11,7 +10,7 @@ index f0d4503..c617425 100644
  }
  
  static bool r600_is_zs_format_supported(enum pipe_format format)
-@@ -918,7 +918,8 @@ void evergreen_init_color_surface_rat(struct r600_context *rctx,
+@@ -982,7 +982,8 @@ void evergreen_init_color_surface_rat(st
  	unsigned format = r600_translate_colorformat(rctx->b.chip_class,
  						     surf->base.format);
  	unsigned endian = r600_colorformat_endian_swap(format);
@@ -21,7 +20,7 @@ index f0d4503..c617425 100644
  	unsigned block_size =
  		align(util_format_get_blocksize(pipe_buffer->format), 4);
  	unsigned pitch_alignment =
-@@ -1078,7 +1079,7 @@ void evergreen_init_color_surface(struct r600_context *rctx,
+@@ -1143,7 +1144,7 @@ void evergreen_init_color_surface(struct
  	format = r600_translate_colorformat(rctx->b.chip_class, surf->base.format);
  	assert(format != ~0);
  
@@ -30,11 +29,10 @@ index f0d4503..c617425 100644
  	assert(swap != ~0);
  
  	if (rtex->resource.b.b.usage == PIPE_USAGE_STAGING) {
-diff --git a/src/gallium/drivers/r600/r600_state.c b/src/gallium/drivers/r600/r600_state.c
-index dd2e423..190fdfc 100644
---- a/src/gallium/drivers/r600/r600_state.c
-+++ b/src/gallium/drivers/r600/r600_state.c
-@@ -149,7 +149,7 @@ static bool r600_is_sampler_format_supported(struct pipe_screen *screen, enum pi
+diff -up mesa-20160225/src/gallium/drivers/r600/r600_state.c.egbe mesa-20160225/src/gallium/drivers/r600/r600_state.c
+--- mesa-20160225/src/gallium/drivers/r600/r600_state.c.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/r600/r600_state.c	2016-02-25 13:06:47.351154059 +1000
+@@ -149,7 +149,7 @@ static bool r600_is_sampler_format_suppo
  static bool r600_is_colorbuffer_format_supported(enum chip_class chip, enum pipe_format format)
  {
  	return r600_translate_colorformat(chip, format) != ~0U &&
@@ -43,7 +41,7 @@ index dd2e423..190fdfc 100644
  }
  
  static bool r600_is_zs_format_supported(enum pipe_format format)
-@@ -899,7 +899,7 @@ static void r600_init_color_surface(struct r600_context *rctx,
+@@ -927,7 +927,7 @@ static void r600_init_color_surface(stru
  	format = r600_translate_colorformat(rctx->b.chip_class, surf->base.format);
  	assert(format != ~0);
  
@@ -52,11 +50,10 @@ index dd2e423..190fdfc 100644
  	assert(swap != ~0);
  
  	if (rtex->resource.b.b.usage == PIPE_USAGE_STAGING) {
-diff --git a/src/gallium/drivers/r600/r600_state_common.c b/src/gallium/drivers/r600/r600_state_common.c
-index fabc52c..c276016 100644
---- a/src/gallium/drivers/r600/r600_state_common.c
-+++ b/src/gallium/drivers/r600/r600_state_common.c
-@@ -2258,7 +2258,7 @@ uint32_t r600_translate_colorformat(enum chip_class chip, enum pipe_format forma
+diff -up mesa-20160225/src/gallium/drivers/r600/r600_state_common.c.egbe mesa-20160225/src/gallium/drivers/r600/r600_state_common.c
+--- mesa-20160225/src/gallium/drivers/r600/r600_state_common.c.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/r600/r600_state_common.c	2016-02-25 13:06:47.352154086 +1000
+@@ -2704,7 +2704,7 @@ uint32_t r600_translate_colorformat(enum
  
  uint32_t r600_colorformat_endian_swap(uint32_t colorformat)
  {
@@ -65,11 +62,10 @@ index fabc52c..c276016 100644
  		switch(colorformat) {
  		/* 8-bit buffers. */
  		case V_0280A0_COLOR_4_4:
-diff --git a/src/gallium/drivers/radeon/r600_pipe_common.h b/src/gallium/drivers/radeon/r600_pipe_common.h
-index e7f410d..9bb471a 100644
---- a/src/gallium/drivers/radeon/r600_pipe_common.h
-+++ b/src/gallium/drivers/radeon/r600_pipe_common.h
-@@ -457,7 +457,7 @@ struct pipe_surface *r600_create_surface_custom(struct pipe_context *pipe,
+diff -up mesa-20160225/src/gallium/drivers/radeon/r600_pipe_common.h.egbe mesa-20160225/src/gallium/drivers/radeon/r600_pipe_common.h
+--- mesa-20160225/src/gallium/drivers/radeon/r600_pipe_common.h.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/radeon/r600_pipe_common.h	2016-02-25 13:06:47.352154086 +1000
+@@ -576,7 +576,7 @@ struct pipe_surface *r600_create_surface
  						struct pipe_resource *texture,
  						const struct pipe_surface *templ,
  						unsigned width, unsigned height);
@@ -78,11 +74,10 @@ index e7f410d..9bb471a 100644
  void evergreen_do_fast_color_clear(struct r600_common_context *rctx,
  				   struct pipe_framebuffer_state *fb,
  				   struct r600_atom *fb_state,
-diff --git a/src/gallium/drivers/radeon/r600_texture.c b/src/gallium/drivers/radeon/r600_texture.c
-index 9a46c53..5022666 100644
---- a/src/gallium/drivers/radeon/r600_texture.c
-+++ b/src/gallium/drivers/radeon/r600_texture.c
-@@ -1157,10 +1157,215 @@ static void r600_surface_destroy(struct pipe_context *pipe,
+diff -up mesa-20160225/src/gallium/drivers/radeon/r600_texture.c.egbe mesa-20160225/src/gallium/drivers/radeon/r600_texture.c
+--- mesa-20160225/src/gallium/drivers/radeon/r600_texture.c.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/radeon/r600_texture.c	2016-02-25 13:07:22.903127421 +1000
+@@ -1252,10 +1252,215 @@ static void r600_surface_destroy(struct
  	FREE(surface);
  }
  
@@ -299,22 +294,21 @@ index 9a46c53..5022666 100644
  #define HAS_SWIZZLE(chan,swz) (desc->swizzle[chan] == UTIL_FORMAT_SWIZZLE_##swz)
  
  	if (format == PIPE_FORMAT_R11G11B10_FLOAT) /* isn't plain */
-@@ -1238,6 +1443,10 @@ void evergreen_do_fast_color_clear(struct r600_common_context *rctx,
- {
- 	int i;
+@@ -1411,6 +1616,10 @@ void evergreen_do_fast_color_clear(struc
+ 	if (rctx->render_cond)
+ 		return;
  
 +#ifdef PIPE_ARCH_BIG_ENDIAN
 +	return false; /* broken; overkill to just disable them, but */
 +#endif
 +
- 	if (rctx->current_render_cond)
- 		return;
- 
-diff --git a/src/gallium/drivers/radeonsi/si_state.c b/src/gallium/drivers/radeonsi/si_state.c
-index 7f65c47..f3976eb 100644
---- a/src/gallium/drivers/radeonsi/si_state.c
-+++ b/src/gallium/drivers/radeonsi/si_state.c
-@@ -1447,7 +1447,7 @@ static bool si_is_vertex_format_supported(struct pipe_screen *screen, enum pipe_
+ 	for (i = 0; i < fb->nr_cbufs; i++) {
+ 		struct r600_texture *tex;
+ 		unsigned clear_bit = PIPE_CLEAR_COLOR0 << i;
+diff -up mesa-20160225/src/gallium/drivers/radeonsi/si_state.c.egbe mesa-20160225/src/gallium/drivers/radeonsi/si_state.c
+--- mesa-20160225/src/gallium/drivers/radeonsi/si_state.c.egbe	2016-02-22 21:42:41.000000000 +1000
++++ mesa-20160225/src/gallium/drivers/radeonsi/si_state.c	2016-02-25 13:06:47.353154114 +1000
+@@ -1966,7 +1966,7 @@ static bool si_is_vertex_format_supporte
  static bool si_is_colorbuffer_format_supported(enum pipe_format format)
  {
  	return si_translate_colorformat(format) != V_028C70_COLOR_INVALID &&
@@ -323,7 +317,7 @@ index 7f65c47..f3976eb 100644
  }
  
  static bool si_is_zs_format_supported(enum pipe_format format)
-@@ -1615,7 +1615,7 @@ static void si_initialize_color_surface(struct si_context *sctx,
+@@ -2249,7 +2249,7 @@ static void si_initialize_color_surface(
  		R600_ERR("Invalid CB format: %d, disabling CB.\n", surf->base.format);
  	}
  	assert(format != V_028C70_COLOR_INVALID);

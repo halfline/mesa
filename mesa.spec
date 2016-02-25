@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20150824
+%define gitdate 20160225
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 10.6.5
-Release: 3.%{gitdate}%{?dist}
+Version: 11.2.0
+Release: 0.1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -69,8 +69,6 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-Patch25: mesa-10.6-llvmpipe-imm-fix-power.patch
-Patch26: mesa-10.6-fix-texcompress-big-endian.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -302,9 +300,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 #patch12 -p1 -b .16bpp
 
 %patch15 -p1 -b .hwfloat
-%patch20 -p1 -b .egbe
-%patch25 -p1 -b .llvmimm
-%patch26 -p1 -b .texcmprs
+#patch20 -p1 -b .egbe
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
