@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20160225
+%define gitdate 20160310
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 11.2.0
-Release: 0.1.%{gitdate}%{?dist}
+Release: 0.2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -353,7 +353,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-dri \
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}r300,nouveau \
+    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}r300,nouveau,virgl \
 %else
     --with-gallium-drivers=%{?with_llvm:swrast} \
 %endif
@@ -603,6 +603,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Mar 10 2016 Dave Airlie <airlied@redhat.com> 11.2.0-0.2.20160310
+- mesa 11.2.0-rc2 release + enable virgl
+
 * Thu Sep 17 2015 Oded Gabbay <oded.gabbay@redhat.com> 10.6.5-3.20150824
 - Fix texture compression for big-endian (#1250168)
 
