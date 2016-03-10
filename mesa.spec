@@ -478,6 +478,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/dri/kgsl_dri.so
 %endif
 %{_libdir}/dri/nouveau_dri.so
+%{_libdir}/dri/virtio_gpu_dri.so
 %if 0%{?with_vmware}
 %{_libdir}/dri/vmwgfx_dri.so
 %endif
