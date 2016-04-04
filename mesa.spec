@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20160310
+%define gitdate 20160405
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 11.2.0
-Release: 0.2.%{gitdate}%{?dist}
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -604,6 +604,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Apr 05 2016 Dave Airlie <airlied@redhat.com> 11.2.0-1.20160405
+- mesa 11.2.0 final release
+
 * Thu Mar 10 2016 Dave Airlie <airlied@redhat.com> 11.2.0-0.2.20160310
 - mesa 11.2.0-rc2 release + enable virgl
 
