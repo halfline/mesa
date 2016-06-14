@@ -42,12 +42,12 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20160405
+%define gitdate 20160614
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 11.2.0
+Version: 11.2.2
 Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
@@ -69,6 +69,8 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
+
+Patch30: 0001-virgl-fix-checking-fences.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -301,6 +303,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
+%patch30 -p1 -b .virglfix
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -604,6 +607,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Jun 14 2016 Dave Airlie <airlied@redhat.com> - 11.2.2-1.20160614
+- mesa 11.2.2 release
+
 * Tue Apr 05 2016 Dave Airlie <airlied@redhat.com> 11.2.0-1.20160405
 - mesa 11.2.0 final release
 
