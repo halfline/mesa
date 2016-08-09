@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 11.2.2
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -71,6 +71,9 @@ Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
 
 Patch30: 0001-virgl-fix-checking-fences.patch
+
+Patch40: 0001-i956-Add-more-Kabylake-PCI-IDs.patch
+Patch41: 0002-i965-Removing-PCI-IDs-that-are-no-longer-listed-as-K.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -304,6 +307,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
 %patch30 -p1 -b .virglfix
+%patch40 -p1 -b .kblid1
+%patch41 -p1 -b .kblid2
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -607,6 +612,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Aug 09 2016 Rob Clark <rclark@redhat.com> - 11.2.2-2.20160614
+- update kbl pci ids.
+
 * Tue Jun 14 2016 Dave Airlie <airlied@redhat.com> - 11.2.2-1.20160614
 - mesa 11.2.2 release
 
