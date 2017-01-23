@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20160614
+%define gitdate 20170119
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 11.2.2
-Release: 2.%{gitdate}%{?dist}
+Version: 17.0.0
+Release: 0.1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -69,11 +69,7 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-
-Patch30: 0001-virgl-fix-checking-fences.patch
-
-Patch40: 0001-i956-Add-more-Kabylake-PCI-IDs.patch
-Patch41: 0002-i965-Removing-PCI-IDs-that-are-no-longer-listed-as-K.patch
+Patch30: fix-endian.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -306,9 +302,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
-%patch30 -p1 -b .virglfix
-%patch40 -p1 -b .kblid1
-%patch41 -p1 -b .kblid2
+%patch30 -p1 -b .endian
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -361,7 +355,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-dri \
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}r300,nouveau,virgl \
+    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,r300}%{?with_freedreno:freedreno,},nouveau,virgl \
 %else
     --with-gallium-drivers=%{?with_llvm:swrast} \
 %endif
@@ -432,25 +426,22 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libGL
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libGL.so.1
 %{_libdir}/libGL.so.1.*
 
 %files libEGL
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libEGL.so.1
 %{_libdir}/libEGL.so.1.*
 
 %files libGLES
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libGLESv2.so.2
 %{_libdir}/libGLESv2.so.2.*
 
 %files filesystem
 %defattr(-,root,root,-)
-%doc docs/COPYING docs/Mesa-MLAA-License-Clarification-Email.txt
+%doc docs/Mesa-MLAA-License-Clarification-Email.txt
 %dir %{_libdir}/dri
 %if %{with_hardware}
 %if 0%{?with_vdpau}
@@ -471,8 +462,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/dri/r200_dri.so
 %{_libdir}/dri/nouveau_vieux_dri.so
 %endif
-%{_libdir}/dri/r300_dri.so
 %if 0%{?with_llvm}
+%{_libdir}/dri/r300_dri.so
 %{_libdir}/dri/r600_dri.so
 %if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_dri.so
@@ -544,19 +535,20 @@ rm -rf $RPM_BUILD_ROOT
 %files libGLES-devel
 %defattr(-,root,root,-)
 %dir %{_includedir}/GLES2
+%dir %{_includedir}/GLES3
 %{_includedir}/GLES2/gl2platform.h
 %{_includedir}/GLES2/gl2.h
 %{_includedir}/GLES2/gl2ext.h
 %{_includedir}/GLES3/gl3platform.h
 %{_includedir}/GLES3/gl3.h
 %{_includedir}/GLES3/gl31.h
+%{_includedir}/GLES3/gl32.h
 %{_includedir}/GLES3/gl3ext.h
 %{_libdir}/pkgconfig/glesv2.pc
 %{_libdir}/libGLESv2.so
 
 %files libOSMesa
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libOSMesa.so.8*
 
 %files libOSMesa-devel
@@ -568,7 +560,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libgbm
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libgbm.so.1
 %{_libdir}/libgbm.so.1.*
 
@@ -581,7 +572,6 @@ rm -rf $RPM_BUILD_ROOT
 %if !0%{?rhel}
 %files libwayland-egl
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %{_libdir}/libwayland-egl.so.1
 %{_libdir}/libwayland-egl.so.1.*
 
@@ -594,7 +584,6 @@ rm -rf $RPM_BUILD_ROOT
 %if 0%{?with_vmware}
 %files libxatracker
 %defattr(-,root,root,-)
-%doc docs/COPYING
 %if %{with_hardware}
 %{_libdir}/libxatracker.so.2
 %{_libdir}/libxatracker.so.2.*
@@ -612,6 +601,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jan 23 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-0.1.20170123
+- mesa 17.0.0-rc1
+
 * Tue Aug 09 2016 Rob Clark <rclark@redhat.com> - 11.2.2-2.20160614
 - update kbl pci ids.
 
