@@ -42,7 +42,7 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170119
+%define gitdate 20170123
 #% define snapshot 
 
 Summary: Mesa graphics libraries
