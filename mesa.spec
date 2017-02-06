@@ -48,7 +48,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.0
-Release: 0.1.%{gitdate}%{?dist}
+Release: 0.2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -94,7 +94,7 @@ BuildRequires: python-mako
 BuildRequires: gettext
 %if 0%{?with_llvm}
 %if 0%{?with_private_llvm}
-BuildRequires: mesa-private-llvm-devel >= 3.6
+BuildRequires: mesa-private-llvm-devel >= 3.9
 %else
 BuildRequires: llvm-devel >= 3.0
 %endif
@@ -601,6 +601,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Feb 06 2017 Adam Jackson <ajax@redhat.com> - 17.0.0-0.2.20170123
+- Rebuild against (and BuildRequire) mesa-private-llvm >= 3.9
+
 * Mon Jan 23 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-0.1.20170123
 - mesa 17.0.0-rc1
 
