@@ -42,13 +42,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170123
+%define gitdate 20170215
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.0
-Release: 0.2.%{gitdate}%{?dist}
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -69,7 +69,6 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-Patch30: fix-endian.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -302,7 +301,6 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
-%patch30 -p1 -b .endian
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -601,6 +599,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Feb 15 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-1.20170215
+- mesa 17.0.0 release
+
 * Mon Feb 06 2017 Adam Jackson <ajax@redhat.com> - 17.0.0-0.2.20170123
 - Rebuild against (and BuildRequire) mesa-private-llvm >= 3.9
 
