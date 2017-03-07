@@ -54,13 +54,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170215
+%define gitdate 20170307
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 17.0.0
-Release: 2.%{gitdate}%{?dist}
+Version: 17.0.1
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -642,6 +642,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Mar 07 2017 Dave Airlie <airlied@redhat.com> - 17.0.1-1.20170307
+- mesa 17.0.1 release
+
 * Tue Feb 28 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-2.20170215
 - enable more drivers on aarch64 + vulkan drivers (#1358444)
 
