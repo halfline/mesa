@@ -29,16 +29,28 @@
 %else
 %define with_hardware 1
 %define base_drivers nouveau,radeon,r200
+%define base_vulkan_drivers radeon
 %ifarch %{ix86} x86_64
 %define platform_drivers ,i915,i965
 %define with_vmware 1
+%define platform_vulkan_drivers ,intel
 %endif
 %ifarch ppc
 %define platform_drivers ,swrast
 %endif
 %endif
 
+%ifarch x86_64
+%define with_vulkan 1
+%else
+%define with_vulkan 0
+%endif
+
 %define dri_drivers --with-dri-drivers=%{?base_drivers}%{?platform_drivers}
+
+%if 0%{?with_vulkan}
+%define vulkan_drivers --with-vulkan-drivers=%{?base_vulkan_drivers}%{?platform_vulkan_drivers}
+%endif
 
 %define _default_patch_fuzz 2
 
@@ -48,7 +60,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.0
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -281,6 +293,15 @@ Group: System Environment/Libraries
 %description libglapi
 Mesa shared glapi
 
+%if 0%{?with_vulkan}
+%package vulkan-drivers
+Summary:        Mesa Vulkan drivers
+Requires:       vulkan%{_isa}
+
+%description vulkan-drivers
+The drivers with support for the Vulkan API.
+%endif
+
 %prep
 #setup -q -n Mesa-%{version}%{?snapshot}
 %setup -q -n mesa-%{gitdate}
@@ -348,8 +369,10 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --disable-opencl \
     --enable-glx-tls \
     --enable-texture-float=yes \
+%if %{with_vulkan}
+    %{?vulkan_drivers} \
+%endif
     %{?with_llvm:--enable-gallium-llvm} \
-    %{?with_llvm:--with-llvm-shared-libs} \
     --enable-dri \
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
@@ -385,6 +408,8 @@ rm -f $RPM_BUILD_ROOT%{_libdir}/vdpau/*.so
 rm -f $RPM_BUILD_ROOT%{_includedir}/GL/w*.h
 
 rm -rf $RPM_BUILD_ROOT%{_libdir}/gallium-pipe/
+
+rm -f $RPM_BUILD_ROOT%{_includedir}/vulkan/vulkan_intel.h
 
 # remove .la files
 find $RPM_BUILD_ROOT -name \*.la | xargs rm -f
@@ -598,7 +623,28 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %endif
 
+%if 0%{?with_vulkan}
+%files vulkan-drivers
+%ifarch x86_64
+%{_libdir}/libvulkan_intel.so
+%{_datadir}/vulkan/icd.d/intel_icd.x86_64.json
+%endif
+%{_libdir}/libvulkan_radeon.so
+%ifarch x86_64
+%{_datadir}/vulkan/icd.d/radeon_icd.x86_64.json
+%endif
+%ifarch ppc64le
+%{_datadir}/vulkan/icd.d/radeon_icd.powerpc64le.json
+%endif
+%ifarch aarch64
+%{_datadir}/vulkan/icd.d/radeon_icd.aarch64.json
+%endif
+%endif
+
 %changelog
+* Tue Feb 28 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-2.20170215
+- enable more drivers on aarch64 + vulkan drivers (#1358444)
+
 * Wed Feb 15 2017 Dave Airlie <airlied@redhat.com> - 17.0.0-1.20170215
 - mesa 17.0.0 release
 
