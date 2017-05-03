@@ -60,7 +60,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.1
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -83,6 +83,8 @@ Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
 
 Patch30: 0001-glsl-Allow-compatibility-shaders-with-MESA_GL_VERSIO.patch
+
+Patch40: 0001-Revert-draw-use-SoA-fetch-not-AoS-one.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -326,6 +328,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 #patch20 -p1 -b .egbe
 
 %patch30 -p1 -b .glslfix
+
+%patch40 -p1 -b .bigendian-fix
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -646,6 +650,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed May 03 2017 Lyude Paul <lyude@redhat.com> - 17.0.1-3.20170307
+- Add temporary revert for #1438891
+
 * Tue Mar 28 2017 Dave Airlie <airlied@redhat.com> - 17.0.1-2.20170307
 - Allow compat shaders override. (#1429813)
 
