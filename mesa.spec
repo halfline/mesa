@@ -40,7 +40,7 @@
 %endif
 %endif
 
-%ifarch x86_64
+%ifarch x86_64 ppc64le aarch64
 %define with_vulkan 1
 %else
 %define with_vulkan 0
@@ -650,6 +650,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri May 05 2017 Adam Jackson <ajax@redhat.com> - 17.0.1-4.20170307
+- Add ppc64le (and fix aarch64) vulkan build
+
 * Wed May 03 2017 Lyude Paul <lyude@redhat.com> - 17.0.1-3.20170307
 - Add temporary revert for #1438891
 
