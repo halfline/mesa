@@ -40,7 +40,7 @@
 %endif
 %endif
 
-%ifarch x86_64 ppc64le aarch64
+%ifarch x86_64 ppc64le
 %define with_vulkan 1
 %else
 %define with_vulkan 0
@@ -644,14 +644,11 @@ rm -rf $RPM_BUILD_ROOT
 %ifarch ppc64le
 %{_datadir}/vulkan/icd.d/radeon_icd.powerpc64le.json
 %endif
-%ifarch aarch64
-%{_datadir}/vulkan/icd.d/radeon_icd.aarch64.json
-%endif
 %endif
 
 %changelog
 * Fri May 05 2017 Adam Jackson <ajax@redhat.com> - 17.0.1-4.20170307
-- Add ppc64le (and fix aarch64) vulkan build
+- Add ppc64le vulkan build
 
 * Wed May 03 2017 Lyude Paul <lyude@redhat.com> - 17.0.1-3.20170307
 - Add temporary revert for #1438891
