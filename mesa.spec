@@ -60,7 +60,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.1
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -85,6 +85,8 @@ Patch20: mesa-10.2-evergreen-big-endian.patch
 Patch30: 0001-glsl-Allow-compatibility-shaders-with-MESA_GL_VERSIO.patch
 
 Patch40: 0001-Revert-draw-use-SoA-fetch-not-AoS-one.patch
+
+Patch50: 0001-gallivm-Make-sure-module-has-the-correct-data-layout.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -330,6 +332,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch30 -p1 -b .glslfix
 
 %patch40 -p1 -b .bigendian-fix
+
+%patch50 -p1 -b .gallivm-datalayout-fix
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -647,6 +651,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue May 09 2017 Tom Stellard <tstellar@redhat.com> - 17.0.1-5.20170307
+- Use correct datalayout for llvmpipe (#1445423)
+
 * Fri May 05 2017 Adam Jackson <ajax@redhat.com> - 17.0.1-4.20170307
 - Add ppc64le vulkan build
 
