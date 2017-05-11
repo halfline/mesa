@@ -1,5 +1,6 @@
 %if 0%{?rhel}
 %define with_private_llvm 1
+%define with_vdpau 1
 %else
 %define with_private_llvm 0
 %define with_vdpau 1
@@ -60,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.0.1
-Release: 5.%{gitdate}%{?dist}
+Release: 6.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -407,6 +408,8 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %if 0%{?rhel}
 # remove pre-DX9 drivers
 rm -f $RPM_BUILD_ROOT%{_libdir}/dri/{radeon,r200,nouveau_vieux}_dri.*
+# remove r300 vdpau
+rm -f $RPM_BUILD_ROOT%{_libdir}/vdpau/libvdpau_r300.*
 %endif
 
 %if !%{with_hardware}
@@ -651,6 +654,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu May 11 2017 Dave Airlie <airlied@redhat.com> - 17.0.1-6.20170307
+- enable VDPAU drivers (#1297276)
+
 * Tue May 09 2017 Tom Stellard <tstellar@redhat.com> - 17.0.1-5.20170307
 - Use correct datalayout for llvmpipe (#1445423)
 
