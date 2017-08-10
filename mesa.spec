@@ -55,13 +55,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170307
+%define gitdate 20170815
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 17.0.1
-Release: 6.%{gitdate}%{?dist}
+Version: 17.2.0
+Release: 0.1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -83,11 +83,7 @@ Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
 
-Patch30: 0001-glsl-Allow-compatibility-shaders-with-MESA_GL_VERSIO.patch
-
 Patch40: 0001-Revert-draw-use-SoA-fetch-not-AoS-one.patch
-
-Patch50: 0001-gallivm-Make-sure-module-has-the-correct-data-layout.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -330,11 +326,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
 
-%patch30 -p1 -b .glslfix
-
 %patch40 -p1 -b .bigendian-fix
-
-%patch50 -p1 -b .gallivm-datalayout-fix
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -654,6 +646,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Aug 15 2017 Dave Airlie <airlied@redhat.com> - 17.2.0-0.1.20170815
+- rebase to 17.2-rc4
+
 * Thu May 11 2017 Dave Airlie <airlied@redhat.com> - 17.0.1-6.20170307
 - enable VDPAU drivers (#1297276)
 
