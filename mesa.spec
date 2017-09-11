@@ -55,13 +55,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170815
+%define gitdate 20170911
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.0
-Release: 0.1.%{gitdate}%{?dist}
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -646,6 +646,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Sep 11 2017 Dave Airlie <airlied@redhat.com> - 17.2.0-1.20170911
+- rebase to 17.2.0 final release
+
 * Tue Aug 15 2017 Dave Airlie <airlied@redhat.com> - 17.2.0-0.1.20170815
 - rebase to 17.2-rc4
 
