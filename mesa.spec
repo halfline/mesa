@@ -1,11 +1,11 @@
 %if 0%{?rhel}
 %define with_private_llvm 1
-%define with_vdpau 1
 %else
 %define with_private_llvm 0
+%endif
+
 %define with_vdpau 1
 %define with_wayland 1
-%endif
 
 %ifnarch ppc
 %define with_radeonsi 1
@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.0
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -90,7 +90,7 @@ BuildRequires: pkgconfig autoconf automake libtool
 BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
-BuildRequires: libdrm-devel >= 2.4.60
+BuildRequires: libdrm-devel >= 2.4.75
 BuildRequires: libXxf86vm-devel
 BuildRequires: expat-devel
 BuildRequires: xorg-x11-proto-devel
@@ -117,9 +117,10 @@ BuildRequires: elfutils-libelf-devel
 BuildRequires: libxml2-python
 BuildRequires: libudev-devel
 BuildRequires: bison flex
-%if !0%{?rhel}
-BuildRequires: pkgconfig(wayland-client) >= %{min_wayland_version}
-BuildRequires: pkgconfig(wayland-server) >= %{min_wayland_version}
+%if %{with wayland}
+BuildRequires: pkgconfig(wayland-client) >= 1.11
+BuildRequires: pkgconfig(wayland-server) >= 1.11
+BuildRequires: pkgconfig(wayland-protocols) >= 1.8.0
 %endif
 BuildRequires: mesa-libGL-devel
 %if 0%{?with_vdpau}
@@ -249,7 +250,7 @@ Provides: libgbm-devel
 Mesa libgbm development package
 
 
-%if !0%{?rhel}
+%if %{with wayland}
 %package libwayland-egl
 Summary: Mesa libwayland-egl library
 Group: System Environment/Libraries
@@ -599,7 +600,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/gbm.h
 %{_libdir}/pkgconfig/gbm.pc
 
-%if !0%{?rhel}
+%if %{with wayland}
 %files libwayland-egl
 %defattr(-,root,root,-)
 %{_libdir}/libwayland-egl.so.1
@@ -646,6 +647,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Sep 28 2017 Olivier Fourdan <ofourdan@redhat.com> - 17.2.0-2.20170911
+- Enable wayland-egl, add dependencies on wayland-protocols (#1481412)
+
 * Mon Sep 11 2017 Dave Airlie <airlied@redhat.com> - 17.2.0-1.20170911
 - rebase to 17.2.0 final release
 
