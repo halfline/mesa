@@ -55,13 +55,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20170911
+%define gitdate 20171005
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 17.2.0
-Release: 2.%{gitdate}%{?dist}
+Version: 17.2.2
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -78,18 +78,18 @@ Source3: make-git-snapshot.sh
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1: nv50-fix-build.patch
+Patch2: 0001-mesa-Squash-merge-of-S3TC-support.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-
-Patch40: 0001-Revert-draw-use-SoA-fetch-not-AoS-one.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
+BuildRequires: libatomic
 BuildRequires: libdrm-devel >= 2.4.75
 BuildRequires: libXxf86vm-devel
 BuildRequires: expat-devel
@@ -312,6 +312,7 @@ The drivers with support for the Vulkan API.
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
+%patch2 -p1 -b .s3tc
 
 # this fastpath is:
 # - broken with swrast classic
@@ -326,8 +327,6 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
-
-%patch40 -p1 -b .bigendian-fix
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
@@ -647,6 +646,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Oct 05 2017 Dave Airlie <airlied@redhat.com> - 17.2.2-1.20171005
+- rebase to 17.2.2 final release + s3tc support
+
 * Thu Sep 28 2017 Olivier Fourdan <ofourdan@redhat.com> - 17.2.0-2.20170911
 - Enable wayland-egl, add dependencies on wayland-protocols (#1481412)
 
