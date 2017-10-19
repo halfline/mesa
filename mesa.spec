@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 1.%{gitdate}%{?dist}
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -108,7 +108,7 @@ BuildRequires: python-mako
 BuildRequires: gettext
 %if 0%{?with_llvm}
 %if 0%{?with_private_llvm}
-BuildRequires: mesa-private-llvm-devel >= 3.9
+BuildRequires: llvm-private-devel >= 5.0
 %else
 BuildRequires: llvm-devel >= 3.0
 %endif
@@ -329,8 +329,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 #patch20 -p1 -b .egbe
 
 %if 0%{with_private_llvm}
-sed -i 's/\[llvm-config\]/\[mesa-private-llvm-config-%{__isa_bits}\]/g' configure.ac
-sed -i 's/`$LLVM_CONFIG --version`/$LLVM_VERSION_MAJOR.$LLVM_VERSION_MINOR-mesa/' configure.ac
+sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
+sed -i 's/`$LLVM_CONFIG --version`/$LLVM_VERSION_MAJOR.$LLVM_VERSION_MINOR-rhel/' configure.ac
 %endif
 
 # need to use libdrm_nouveau2 on F17
@@ -646,6 +646,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Oct 19 2017 Tom Stellard <tstellar@redhat.com> - 17.2.3-2.20171019
+- Switch to llvm-private
+
 * Thu Oct 19 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-1.20171019
 - rebase to 17.2.3
 
