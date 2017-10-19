@@ -60,7 +60,7 @@
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 17.2.2
+Version: 17.2.3
 Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
@@ -646,6 +646,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Oct 19 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-1.20171019
+- rebase to 17.2.3
+
 * Thu Oct 05 2017 Dave Airlie <airlied@redhat.com> - 17.2.2-1.20171005
 - rebase to 17.2.2 final release + s3tc support
 
