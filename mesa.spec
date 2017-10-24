@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -77,6 +77,7 @@ Source3: make-git-snapshot.sh
 # Fedora opts to ignore the optional part of clause 2 and treat that code as 2 clause BSD.
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
+Patch0: mesa-17.3-final.patch
 Patch1: nv50-fix-build.patch
 Patch2: 0001-mesa-Squash-merge-of-S3TC-support.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
@@ -311,6 +312,7 @@ The drivers with support for the Vulkan API.
 %setup -q -n mesa-%{gitdate}
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
+%patch0 -p1 -b .mesa17.2.3
 %patch1 -p1 -b .nv50rtti
 %patch2 -p1 -b .s3tc
 
@@ -646,6 +648,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Oct 24 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-3.20171019
+- Add final 17.2.3 patch.
+
 * Thu Oct 19 2017 Tom Stellard <tstellar@redhat.com> - 17.2.3-2.20171019
 - Switch to llvm-private
 
