@@ -11,7 +11,7 @@
 %define with_radeonsi 1
 %endif
 
-%ifarch %{arm}
+%ifarch %{arm} aarch64
 %define with_freedreno 1
 %endif
 
@@ -22,7 +22,7 @@
 %define with_llvm 1
 %endif
 
-%ifarch s390 s390x aarch64
+%ifarch s390 s390x
 %define with_hardware 0
 %ifarch s390
 %define base_drivers swrast
@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -383,7 +383,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --enable-dri \
 %if %{with_hardware}
     %{?with_vmware:--enable-xa} \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,r300}%{?with_freedreno:freedreno,},nouveau,virgl \
+    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,r300,}%{?with_freedreno:freedreno,}nouveau,virgl \
 %else
     --with-gallium-drivers=%{?with_llvm:swrast} \
 %endif
@@ -507,6 +507,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 %if 0%{?with_freedreno}
 %{_libdir}/dri/kgsl_dri.so
+%{_libdir}/dri/msm_dri.so
 %endif
 %{_libdir}/dri/nouveau_dri.so
 %{_libdir}/dri/virtio_gpu_dri.so
@@ -648,6 +649,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Oct 25 2017 Yaakov Selkowitz <yselkowi@redhat.com> - 17.2.3-5.20171019
+- Enable hardware drivers on aarch64 (#1358444)
+
 * Tue Oct 24 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-4.20171019
 - Update gitdate and clean out sources.
 
