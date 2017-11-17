@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 5.%{gitdate}%{?dist}
+Release: 6.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -91,7 +91,7 @@ BuildRequires: kernel-headers
 BuildRequires: xorg-x11-server-devel
 %endif
 BuildRequires: libatomic
-BuildRequires: libdrm-devel >= 2.4.75
+BuildRequires: libdrm-devel >= 2.4.83
 BuildRequires: libXxf86vm-devel
 BuildRequires: expat-devel
 BuildRequires: xorg-x11-proto-devel
@@ -137,6 +137,7 @@ Summary: Mesa libGL runtime libraries and DRI drivers
 Group: System Environment/Libraries
 Provides: libGL
 Requires: mesa-libglapi = %{version}-%{release}
+Requires: libdrm >= 2.4.83
 
 %description libGL
 Mesa libGL runtime library.
@@ -169,6 +170,7 @@ Mesa driver filesystem
 Summary: Mesa-based DRI drivers
 Group: User Interface/X Hardware Support
 Requires: mesa-filesystem%{?_isa}
+Requires: libdrm >= 2.4.83
 Obsoletes: mesa-dri1-drivers < 7.12
 Obsoletes: mesa-dri-llvmcore <= 7.12
 %description dri-drivers
@@ -235,6 +237,7 @@ Mesa offscreen rendering development package
 Summary: Mesa gbm library
 Group: System Environment/Libraries
 Provides: libgbm
+Requires: libdrm >= 2.4.83
 Requires: mesa-libglapi = %{version}-%{release}
 
 %description libgbm
@@ -649,6 +652,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Fri Nov 17 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-6.20171019
+- fix libgbm/dri-drivers requires on libdrm
+
 * Wed Oct 25 2017 Yaakov Selkowitz <yselkowi@redhat.com> - 17.2.3-5.20171019
 - Enable hardware drivers on aarch64 (#1358444)
 
