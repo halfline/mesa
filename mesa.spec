@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 6.%{gitdate}%{?dist}
+Release: 7.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -84,6 +84,14 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
+
+# For bz1503861, fix visual artifacts on DRI PRIME offloading
+# Feel free to drop these patches during the next mesa rebase (>17.2.3)
+Patch30: 0001-intel-blorp-Use-mocs.tex-for-depth-stencil.patch
+Patch31: 0002-anv-blorp-Add-a-device-parameter-to-blorp_surf_for_a.patch
+Patch32: 0003-blorp-Turn-anv_CmdCopyBuffer-into-a-blorp_buffer_cop.patch
+Patch33: 0004-intel-blorp-Make-the-MOCS-setting-part-of-blorp_addr.patch
+Patch34: 0005-i965-Use-PTE-MOCS-for-all-external-buffers.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -332,6 +340,12 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
+
+%patch30 -p1 -b .bz1503861_patch1
+%patch31 -p1 -b .bz1503861_patch2
+%patch32 -p1 -b .bz1503861_patch3
+%patch33 -p1 -b .bz1503861_patch4
+%patch34 -p1 -b .bz1503861_patch5
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
@@ -652,6 +666,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Thu Nov 30 2017 Lyude Paul <lyude@redhat.com> - 17.2.3-7.20171019
+- Add patches to fix cache lines with DRI_PRIME + amdgpu (#1503861)
+
 * Fri Nov 17 2017 Dave Airlie <airlied@redhat.com> - 17.2.3-6.20171019
 - fix libgbm/dri-drivers requires on libdrm
 
