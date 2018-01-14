@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 7.%{gitdate}%{?dist}
+Release: 8.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -92,6 +92,8 @@ Patch31: 0002-anv-blorp-Add-a-device-parameter-to-blorp_surf_for_a.patch
 Patch32: 0003-blorp-Turn-anv_CmdCopyBuffer-into-a-blorp_buffer_cop.patch
 Patch33: 0004-intel-blorp-Make-the-MOCS-setting-part-of-blorp_addr.patch
 Patch34: 0005-i965-Use-PTE-MOCS-for-all-external-buffers.patch
+
+Patch40: 0001-intel-Add-more-Coffee-Lake-PCI-IDs.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -346,6 +348,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch32 -p1 -b .bz1503861_patch3
 %patch33 -p1 -b .bz1503861_patch4
 %patch34 -p1 -b .bz1503861_patch5
+
+%patch40 -p1 -b .cfl_ids
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
@@ -666,6 +670,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Mon Jan 15 2018 Dave Airlie <airlied@redhat.com> - 17.2.3-8.20171019
+- Add missing Intel CFL ids.
+
 * Thu Nov 30 2017 Lyude Paul <lyude@redhat.com> - 17.2.3-7.20171019
 - Add patches to fix cache lines with DRI_PRIME + amdgpu (#1503861)
 
