@@ -54,31 +54,29 @@
 
 %global sanitize 1
 
-#global rctag rc6
+#global rctag rc3
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        17.2.2
-Release:        4%{?rctag:.%{rctag}}%{?dist}
+Version:        17.3.6
+Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
-Source0:        https://mesa.freedesktop.org/archive/%{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
+#Source0:        https://mesa.freedesktop.org/archive/%{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
+Source0:        %{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
 Source1:        vl_decoder.c
 Source2:        vl_mpeg12_decoder.c
+Source3:        Makefile
 # src/gallium/auxiliary/postprocess/pp_mlaa* have an ... interestingly worded license.
 # Source4 contains email correspondence clarifying the license terms.
 # Fedora opts to ignore the optional part of clause 2 and treat that code as 2 clause BSD.
-Source3:        Mesa-MLAA-License-Clarification-Email.txt
-
-# https://cgit.freedesktop.org/~ajax/mesa/log/?h=mesa-17.2-s3tc
-Patch0:		0001-mesa-Squash-merge-of-S3TC-support.patch
+Source4:        Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1:         0001-llvm-SONAME-without-version.patch
 Patch2:         0002-hardware-gloat.patch
 Patch3:         0003-evergreen-big-endian.patch
 Patch4:         0004-bigendian-assert.patch
-Patch5:         vc4-Don-t-advertise-tiled-dmabuf-modifiers-if-we-can-t-use-them.patch
 
 # glvnd support patches
 # non-upstreamed ones
@@ -86,6 +84,7 @@ Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch11:        0001-Fix-linkage-against-shared-glapi.patch
 
 # backport from upstream
+Patch1001:      0001-loader_dri3-glx-egl-Reinstate-the-loader_dri3_vtable.patch
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -375,7 +374,7 @@ Headers for development with the Vulkan API.
   cp -f %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
 %endif
 
-cp %{SOURCE3} docs/
+cp %{SOURCE4} docs/
 
 # this is a hack for S3TC support. r200_screen.c is symlinked to
 # radeon_screen.c in git, but is its own file in the tarball.
@@ -411,7 +410,7 @@ export LDFLAGS="-static-libstdc++"
     --with-platforms=x11,drm,surfaceless%{?with_wayland:,wayland} \
     --enable-shared-glapi \
     --enable-gbm \
-    %{?with_omx:--enable-omx} \
+    %{?with_omx:--enable-omx-bellagio} \
     %{?with_opencl:--enable-opencl --enable-opencl-icd} %{!?with_opencl:--disable-opencl} \
     --enable-glx-tls \
     --enable-texture-float=yes \
@@ -694,7 +693,43 @@ popd
 %endif
 
 %changelog
-* Wed Oct 11 2017 Peter Robinson <pbrobinson@fedoraproject.org> 17.2.2-4
+* Tue Feb 27 2018 Adam Jackson <ajax@redhat.com> - 17.3.6-1
+- Update to 17.3.6
+
+* Mon Feb 26 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.5-2
+- Backport patch to fix video corruption
+
+* Tue Feb 20 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.5-1
+- Update to 17.3.5
+
+* Thu Feb 15 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.4-1
+- Update to 17.3.4
+
+* Mon Jan 22 2018 Peter Robinson <pbrobinson@fedoraproject.org> 17.3.3-1
+- Update to 17.3.3
+
+* Mon Jan 01 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.1-1
+- Update to 17.3.1
+
+* Fri Nov 10 2017 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.0-0.4.rc3
+- Sanitize tarball
+
+* Wed Nov  8 2017 Peter Robinson <pbrobinson@fedoraproject.org> 17.3.0-0.3.rc3
+- Update to 17.3.0-rc3
+
+* Tue Oct 31 2017 Peter Robinson <pbrobinson@fedoraproject.org> 17.3.0-0.1.rc2
+- Update to 17.3.0-rc2
+
+* Tue Oct 31 2017 Peter Robinson <pbrobinson@fedoraproject.org> 17.2.4-1
+- Update to 17.2.4 GA
+
+* Mon Oct 23 2017 Tom Stellard <tstellar@redhat.com> - 17.2.3-2
+- Rebuild for LLVM 5.0.0
+
+* Thu Oct 19 2017 Gwyn Ciesla <limburgher@gmail.com> - 17.2.3-1
+- 17.2.3, bugfix release.
+
+* Wed Oct 11 2017 Peter Robinson <pbrobinson@fedoraproject.org> - 17.2.2-4
 - Fix for vc4/Raspberry Pi
 
 * Mon Oct 09 2017 Dave Airlie <airlied@redhat.com> - 17.2.2-3
