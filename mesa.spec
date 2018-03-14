@@ -10,6 +10,13 @@
 %define with_radeonsi 1
 %endif
 
+%global llvm_toolset %{nil}
+%global llvm_pkg_prefix %{nil}
+%if 0%{?rhel} >= 8
+%global llvm_toolset llvm-toolset-7
+%global llvm_pkg_prefix %{llvm_toolset}-
+%endif
+
 %ifarch s390 s390x ppc
 %define with_hardware 0
 %define base_drivers swrast
@@ -59,7 +66,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        17.3.6
-Release:        1%{?rctag:.%{rctag}}%{?dist}
+Release:        2%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -111,9 +118,9 @@ BuildRequires:  elfutils
 BuildRequires:  python
 BuildRequires:  gettext
 %if 0%{?with_llvm}
-BuildRequires: llvm-devel >= 3.4-7
+BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
 %if 0%{?with_opencl}
-BuildRequires: clang-devel >= 3.0
+BuildRequires: %{llvm_pkg_prefix}clang-devel >= 3.0
 %endif
 %endif
 BuildRequires: elfutils-libelf-devel
@@ -147,6 +154,13 @@ BuildRequires: libstdc++-static
 BuildRequires: pkgconfig(valgrind)
 %endif
 BuildRequires: pkgconfig(libglvnd) >= 0.2.0
+
+%global enable_llvmtoolset7 %{nil}
+%if 0%{?rhel} == 7
+BuildRequires: llvm-toolset-7-runtime
+%enable_llvmtoolset7
+%endif
+
 
 %description
 %{summary}.
@@ -419,6 +433,7 @@ export LDFLAGS="-static-libstdc++"
 %endif
     %{?with_llvm:--enable-llvm} \
     %{?with_llvm:--enable-llvm-shared-libs} \
+    %{?with_llvm:--with-llvm-prefix=/opt/rh/%{llvm_toolset}/root/usr } \
     --enable-dri \
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
@@ -693,6 +708,9 @@ popd
 %endif
 
 %changelog
+* Thu Mar 08 2018 Tom Stellard <tstellar@redhat.com> - 17.3.6-2
+- Use llvm-toolset
+
 * Tue Feb 27 2018 Adam Jackson <ajax@redhat.com> - 17.3.6-1
 - Update to 17.3.6
 
