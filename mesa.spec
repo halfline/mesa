@@ -95,6 +95,9 @@ Patch34: 0005-i965-Use-PTE-MOCS-for-all-external-buffers.patch
 
 Patch40: 0001-intel-Add-more-Coffee-Lake-PCI-IDs.patch
 
+# should all go away when we rebase for real
+Patch50: 0001-gallivm-Use-new-LLVM-fast-math-flags-API.patch
+
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
 BuildRequires: kernel-headers
@@ -119,7 +122,7 @@ BuildRequires: python-mako
 BuildRequires: gettext
 %if 0%{?with_llvm}
 %if 0%{?with_private_llvm}
-BuildRequires: llvm-private-devel >= 5.0
+BuildRequires: llvm-private-devel >= 6.0
 %else
 BuildRequires: llvm-devel >= 3.0
 %endif
@@ -350,6 +353,8 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch34 -p1 -b .bz1503861_patch5
 
 %patch40 -p1 -b .cfl_ids
+
+%patch50 -p1 -b .llvm6-1
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
