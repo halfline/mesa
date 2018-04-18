@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 17.2.3
-Release: 8.%{gitdate}%{?dist}
+Release: 9.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -670,6 +670,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Apr 18 2018 Adam Jackson <ajax@redhat.com> - 17.2.3-9
+- Rebuild for new llvm
+
 * Mon Jan 15 2018 Dave Airlie <airlied@redhat.com> - 17.2.3-8.20171019
 - Add missing Intel CFL ids.
 
