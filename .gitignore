@@ -1,1 +1,5 @@
-/mesa-17.3.6.tar.xz
+*.jx
+*.src.rpm
+.build*
+/mesa-*.tar.bz2
+/mesa-*.tar.xz

@@ -1,4 +1,5 @@
-%bcond_without wayland
+# https://bugzilla.redhat.com/show_bug.cgi?id=1546714
+%undefine _annotated_build
 
 # S390 doesn't have video cards, but we need swrast for xserver's GLX
 # llvm (and thus llvmpipe) doesn't actually work on ppc32
@@ -10,13 +11,6 @@
 %define with_radeonsi 1
 %endif
 
-%global llvm_toolset %{nil}
-%global llvm_pkg_prefix %{nil}
-%if 0%{?rhel} >= 8
-%global llvm_toolset llvm-toolset-7
-%global llvm_pkg_prefix %{llvm_toolset}-
-%endif
-
 %ifarch s390 s390x ppc
 %define with_hardware 0
 %define base_drivers swrast
@@ -25,6 +19,8 @@
 %define with_vdpau 1
 %define with_vaapi 1
 %define with_nine 1
+%define with_omx 1
+%define with_opencl 1
 %define base_drivers swrast,nouveau,radeon,r200
 %endif
 
@@ -32,25 +28,20 @@
 %define platform_drivers ,i915,i965
 %define with_vmware 1
 %define with_xa     1
-%define with_omx    1
-%endif
-
-%ifarch %{ix86} x86_64
 %define with_vulkan 1
-%else
-%define with_vulkan 0
-%endif
-
-%ifarch aarch64 %{ix86} x86_64
-%define with_opencl 1
 %endif
 
 %ifarch %{arm} aarch64
 %define with_etnaviv   1
 %define with_freedreno 1
-%define with_omx       1
 %define with_vc4       1
 %define with_xa        1
+%endif
+
+%if 0%{?fedora} < 28
+%define with_wayland_egl 1
+%else
+%define with_wayland_egl 0
 %endif
 
 %define dri_drivers --with-dri-drivers=%{?base_drivers}%{?platform_drivers}
@@ -59,14 +50,14 @@
 %define vulkan_drivers --with-vulkan-drivers=intel,radeon
 %endif
 
-%global sanitize 1
+%global sanitize 0
 
-#global rctag rc3
+#global rctag rc5
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        17.3.6
-Release:        2%{?rctag:.%{rctag}}%{?dist}
+Version:        18.0.2
+Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -85,13 +76,16 @@ Patch2:         0002-hardware-gloat.patch
 Patch3:         0003-evergreen-big-endian.patch
 Patch4:         0004-bigendian-assert.patch
 
+
+# Disable rgb10 configs by default:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1560481
+Patch7:         0001-gallium-Disable-rgb10-configs-by-default.patch
+
+
 # glvnd support patches
 # non-upstreamed ones
 Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch11:        0001-Fix-linkage-against-shared-glapi.patch
-
-# backport from upstream
-Patch1001:      0001-loader_dri3-glx-egl-Reinstate-the-loader_dri3_vtable.patch
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -115,23 +109,23 @@ BuildRequires:  libXi-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libxshmfence-devel
 BuildRequires:  elfutils
-BuildRequires:  python
+BuildRequires:  python3
+BuildRequires:  python2
 BuildRequires:  gettext
 %if 0%{?with_llvm}
-BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
+BuildRequires: llvm-devel >= 3.4-7
 %if 0%{?with_opencl}
-BuildRequires: %{llvm_pkg_prefix}clang-devel >= 3.0
+BuildRequires: clang-devel >= 3.0
 %endif
 %endif
 BuildRequires: elfutils-libelf-devel
-BuildRequires: libxml2-python
+BuildRequires: python3-libxml2
+BuildRequires: python2-libxml2
 BuildRequires: libudev-devel
 BuildRequires: bison flex
-%if %{with wayland}
 BuildRequires: pkgconfig(wayland-client)
 BuildRequires: pkgconfig(wayland-server)
 BuildRequires: pkgconfig(wayland-protocols)
-%endif
 %if 0%{?with_vdpau}
 BuildRequires: libvdpau-devel
 %endif
@@ -148,19 +142,12 @@ BuildRequires: libclc-devel opencl-filesystem
 %if 0%{?with_vulkan}
 BuildRequires: vulkan-devel
 %endif
-BuildRequires: python-mako
-BuildRequires: libstdc++-static
+BuildRequires: python3-mako
+BuildRequires: python2-mako
 %ifarch %{valgrind_arches}
 BuildRequires: pkgconfig(valgrind)
 %endif
 BuildRequires: pkgconfig(libglvnd) >= 0.2.0
-
-%global enable_llvmtoolset7 %{nil}
-%if 0%{?rhel} == 7
-BuildRequires: llvm-toolset-7-runtime
-%enable_llvmtoolset7
-%endif
-
 
 %description
 %{summary}.
@@ -284,7 +271,7 @@ Provides:       libgbm-devel%{?_isa}
 %description libgbm-devel
 %{summary}.
 
-%if %{with wayland}
+%if %{?with_wayland_egl}
 %package libwayland-egl
 Summary:        Mesa libwayland-egl runtime library
 Provides:       libwayland-egl
@@ -386,24 +373,16 @@ Headers for development with the Vulkan API.
 %if 0%{sanitize}
   cp -f %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
   cp -f %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
+%else
+  cmp %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
+  cmp %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
 %endif
 
 cp %{SOURCE4} docs/
 
-# this is a hack for S3TC support. r200_screen.c is symlinked to
-# radeon_screen.c in git, but is its own file in the tarball.
-cp -f src/mesa/drivers/dri/{radeon,r200}/radeon_screen.c
-
 %build
 autoreconf -vfi
 
-# C++ note: we never say "catch" in the source.  we do say "typeid" once,
-# in an assert, which is patched out above.  LLVM doesn't use RTTI or throw.
-#
-# We do say 'catch' in the clover and d3d1x state trackers, but we're not
-# building those yet.
-export CXXFLAGS="%{?with_opencl:-frtti -fexceptions} %{!?with_opencl:-fno-rtti -fno-exceptions}"
-export LDFLAGS="-static-libstdc++"
 %ifarch %{ix86}
 # i do not have words for how much the assembly dispatch code infuriates me
 %global asm_flags --disable-asm
@@ -421,19 +400,18 @@ export LDFLAGS="-static-libstdc++"
     --disable-xvmc \
     %{?with_vdpau:--enable-vdpau} \
     %{?with_vaapi:--enable-va} \
-    --with-platforms=x11,drm,surfaceless%{?with_wayland:,wayland} \
+    --with-platforms=x11,drm,surfaceless,wayland \
     --enable-shared-glapi \
     --enable-gbm \
     %{?with_omx:--enable-omx-bellagio} \
     %{?with_opencl:--enable-opencl --enable-opencl-icd} %{!?with_opencl:--disable-opencl} \
     --enable-glx-tls \
     --enable-texture-float=yes \
-%if %{with_vulkan}
+%if 0%{?with_vulkan}
     %{?vulkan_drivers} \
 %endif
     %{?with_llvm:--enable-llvm} \
     %{?with_llvm:--enable-llvm-shared-libs} \
-    %{?with_llvm:--with-llvm-prefix=/opt/rh/%{llvm_toolset}/root/usr } \
     --enable-dri \
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
@@ -444,13 +422,6 @@ export LDFLAGS="-static-libstdc++"
 %endif
     %{?dri_drivers}
 
-# libtool refuses to pass through things you ask for in LDFLAGS that it doesn't
-# know about, like -static-libstdc++, so...
-sed -i 's/-fuse-linker-plugin|/-static-lib*|&/' libtool
-sed -i 's/-nostdlib//g' libtool
-sed -i 's/^predep_objects=.*$/#&/' libtool
-sed -i 's/^postdep_objects=.*$/#&/' libtool
-sed -i 's/^postdeps=.*$/#&/' libtool
 %make_build MKDEP=/bin/true V=1
 
 %install
@@ -467,6 +438,12 @@ rm -f %{buildroot}%{_libdir}/libGLX_mesa.so
 rm -f %{buildroot}%{_libdir}/libEGL_mesa.so
 # XXX can we just not build this
 rm -f %{buildroot}%{_libdir}/libGLES*
+
+# remove libwayland-egl on F28+ where it's built as part of wayland source package
+%if !%{?with_wayland_egl}
+rm -f %{buildroot}%{_libdir}/libwayland-egl.so*
+rm -f %{buildroot}%{_libdir}/pkgconfig/wayland-egl.pc
+%endif
 
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
@@ -487,8 +464,6 @@ pushd %{buildroot}%{_libdir}
 for i in libOSMesa*.so libGL.so ; do
     eu-findtextrel $i && exit 1
 done
-# check that we really didn't link libstdc++ dynamically
-eu-readelf -d mesa_dri_drivers.so | grep -q libstdc && exit 1
 popd
 
 %files filesystem
@@ -572,7 +547,7 @@ popd
 %{_includedir}/gbm.h
 %{_libdir}/pkgconfig/gbm.pc
 
-%if %{with wayland}
+%if %{?with_wayland_egl}
 %post libwayland-egl -p /sbin/ldconfig
 %postun libwayland-egl -p /sbin/ldconfig
 %files libwayland-egl
@@ -663,13 +638,11 @@ popd
 %endif
 %endif
 %endif
-%if 0%{?with_llvm}
-%ifarch %{ix86} x86_64 aarch64
+%if 0%{?with_hardware}
 %dir %{_libdir}/gallium-pipe
 %{_libdir}/gallium-pipe/*.so
 %endif
 %{_libdir}/dri/kms_swrast_dri.so
-%endif
 %{_libdir}/dri/swrast_dri.so
 %{_libdir}/dri/virtio_gpu_dri.so
 
@@ -708,20 +681,54 @@ popd
 %endif
 
 %changelog
-* Thu Mar 08 2018 Tom Stellard <tstellar@redhat.com> - 17.3.6-2
-- Use llvm-toolset
+* Tue May  1 2018 Peter Robinson <pbrobinson@fedoraproject.org> 18.0.2-1
+- Mesa 18.0.2
 
-* Tue Feb 27 2018 Adam Jackson <ajax@redhat.com> - 17.3.6-1
-- Update to 17.3.6
+* Tue Apr 24 2018 Jonas Ådahl <jadahl@redhat.com> - 18.0.1-2
+- Disable rgb10 configs by default (rhbz 1560481)
 
-* Mon Feb 26 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.5-2
+* Wed Apr 18 2018 Adam Jackson <ajax@redhat.com> - 18.0.1-1
+- Mesa 18.0.1
+
+* Mon Apr 09 2018 Kalev Lember <klember@redhat.com> - 18.0.0-4
+- Re-enable wayland support, conditionally drop mesa-wayland-egl subpackage
+  only in F28+ (#1564210)
+
+* Tue Apr 03 2018 Tom Stellard <tstellar@redhat.com> - 18.0.0-3
+- Disable build of wayland packages.  These have been obseleted by wayland-devel.
+
+* Mon Apr 02 2018 Tom Stellard <tstellar@redhat.com> - 18.0.0-2.1
+- Rebuild against libLLVM.so with symbol versioning enabled
+
+* Wed Mar 28 2018 Adam Jackson <ajax@redhat.com> - 18.0.0-2
+- Unifarch OpenCL and OpenMAX (except ppc32 and s390 because llvm)
+- Simplify C/LDFLAGS setup to match
+- Drop -static-libstdc++ and related hacks
+- Drop S3TC build hack
+
+* Wed Mar 28 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 18.0.0-1
+- Update to 18.0.0
+
+* Mon Mar 26 2018 Peter Robinson <pbrobinson@fedoraproject.org> 18.0.0-0.5.rc5
+- Update to 18.0.0 rc5
+
+* Mon Mar 19 2018 Adam Jackson <ajax@redhat.com> - 18.0.0-0.4.rc4
+- Build with python3
+
+* Fri Mar 02 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 18.0.0-0.3.rc4
+- Honor CXXFLAGS / LDFLAGS
+
+* Mon Feb 26 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 18.0.0-0.2.rc4
 - Backport patch to fix video corruption
 
-* Tue Feb 20 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.5-1
-- Update to 17.3.5
+* Mon Feb 19 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 18.0.0-0.1.rc4
+- Update to 18.0.0~rc4
 
-* Thu Feb 15 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 17.3.4-1
-- Update to 17.3.4
+* Thu Feb 08 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 18.0.0-0.1.rc3
+- Update to 18.0.0~rc3
+
+* Thu Feb 08 2018 Fedora Release Engineering <releng@fedoraproject.org> - 17.3.3-1.1
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
 
 * Mon Jan 22 2018 Peter Robinson <pbrobinson@fedoraproject.org> 17.3.3-1
 - Update to 17.3.3
