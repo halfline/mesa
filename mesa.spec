@@ -633,13 +633,13 @@ done
 %if 0%{?with_vmware}
 %{_libdir}/dri/vmwgfx_dri.so
 %endif
-%{_libdir}/dri/nouveau_drv_video.so
-%if 0%{?with_llvm}
-%{_libdir}/dri/r600_drv_video.so
-%if 0%{?with_radeonsi}
-%{_libdir}/dri/radeonsi_drv_video.so
-%endif
-%endif
+#{_libdir}/dri/nouveau_drv_video.so
+#if 0%{?with_llvm}
+#{_libdir}/dri/r600_drv_video.so
+#if 0%{?with_radeonsi}
+#{_libdir}/dri/radeonsi_drv_video.so
+#endif
+#endif
 %endif
 %if 0%{?with_llvm}
 %ifarch %{ix86} x86_64 aarch64
