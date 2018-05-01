@@ -416,7 +416,7 @@ export CXXFLAGS="%{?with_opencl:-frtti -fexceptions} %{!?with_opencl:-fno-rtti -
     --enable-gles2 \
     --disable-xvmc \
     %{?with_vdpau:--enable-vdpau} \
-    %{?with_vaapi:--enable-va} \
+    --disable-va \
     --with-platforms=x11,drm,surfaceless%{?with_wayland:,wayland} \
     --enable-shared-glapi \
     --enable-gbm \
