@@ -91,9 +91,6 @@ Patch4:         0004-bigendian-assert.patch
 Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch11:        0001-Fix-linkage-against-shared-glapi.patch
 
-# backport from upstream
-Patch1001:      0001-loader_dri3-glx-egl-Reinstate-the-loader_dri3_vtable.patch
-
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  automake
