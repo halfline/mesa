@@ -65,8 +65,8 @@
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        17.3.6
-Release:        2%{?rctag:.%{rctag}}%{?dist}
+Version:        18.0.2
+Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -149,7 +149,6 @@ BuildRequires: libclc-devel opencl-filesystem
 BuildRequires: vulkan-devel
 %endif
 BuildRequires: python-mako
-BuildRequires: libstdc++-static
 %ifarch %{valgrind_arches}
 BuildRequires: pkgconfig(valgrind)
 %endif
@@ -403,7 +402,6 @@ autoreconf -vfi
 # We do say 'catch' in the clover and d3d1x state trackers, but we're not
 # building those yet.
 export CXXFLAGS="%{?with_opencl:-frtti -fexceptions} %{!?with_opencl:-fno-rtti -fno-exceptions}"
-export LDFLAGS="-static-libstdc++"
 %ifarch %{ix86}
 # i do not have words for how much the assembly dispatch code infuriates me
 %global asm_flags --disable-asm
@@ -444,13 +442,6 @@ export LDFLAGS="-static-libstdc++"
 %endif
     %{?dri_drivers}
 
-# libtool refuses to pass through things you ask for in LDFLAGS that it doesn't
-# know about, like -static-libstdc++, so...
-sed -i 's/-fuse-linker-plugin|/-static-lib*|&/' libtool
-sed -i 's/-nostdlib//g' libtool
-sed -i 's/^predep_objects=.*$/#&/' libtool
-sed -i 's/^postdep_objects=.*$/#&/' libtool
-sed -i 's/^postdeps=.*$/#&/' libtool
 %make_build MKDEP=/bin/true V=1
 
 %install
@@ -708,6 +699,9 @@ popd
 %endif
 
 %changelog
+* Tue May 01 2018 Adam Jackson <ajax@redhat.com> - 18.0.2-1
+- Mesa 18.0.2
+
 * Thu Mar 08 2018 Tom Stellard <tstellar@redhat.com> - 17.3.6-2
 - Use llvm-toolset
 
