@@ -23,7 +23,8 @@
 %else
 %define with_hardware 1
 %define with_vdpau 1
-%define with_vaapi 1
+# XXX maybe wrong...
+%define with_vaapi 0
 %define with_nine 1
 %define base_drivers swrast,nouveau,radeon,r200
 %endif
