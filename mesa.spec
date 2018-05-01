@@ -91,6 +91,8 @@ Patch4:         0004-bigendian-assert.patch
 Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch11:        0001-Fix-linkage-against-shared-glapi.patch
 
+Patch20:        0001-gallium-Disable-rgb10-configs-by-default.patch
+
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
 BuildRequires:  automake
@@ -387,19 +389,9 @@ Headers for development with the Vulkan API.
 
 cp %{SOURCE4} docs/
 
-# this is a hack for S3TC support. r200_screen.c is symlinked to
-# radeon_screen.c in git, but is its own file in the tarball.
-cp -f src/mesa/drivers/dri/{radeon,r200}/radeon_screen.c
-
 %build
 autoreconf -vfi
 
-# C++ note: we never say "catch" in the source.  we do say "typeid" once,
-# in an assert, which is patched out above.  LLVM doesn't use RTTI or throw.
-#
-# We do say 'catch' in the clover and d3d1x state trackers, but we're not
-# building those yet.
-export CXXFLAGS="%{?with_opencl:-frtti -fexceptions} %{!?with_opencl:-fno-rtti -fno-exceptions}"
 %ifarch %{ix86}
 # i do not have words for how much the assembly dispatch code infuriates me
 %global asm_flags --disable-asm
@@ -476,9 +468,6 @@ pushd %{buildroot}%{_libdir}
 for i in libOSMesa*.so libGL.so ; do
     eu-findtextrel $i && exit 1
 done
-# check that we really didn't link libstdc++ dynamically
-eu-readelf -d mesa_dri_drivers.so | grep -q libstdc && exit 1
-popd
 
 %files filesystem
 %doc docs/Mesa-MLAA-License-Clarification-Email.txt
