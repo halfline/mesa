@@ -1,0 +1,3 @@
+At least while ootpa bootstraps, you need to build me thusly:
+
+rhpkg build --target rhel-8.0-llvm-toolset-candidate
