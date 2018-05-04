@@ -25,7 +25,7 @@
 %define with_vdpau 1
 # XXX maybe wrong...
 %define with_vaapi 0
-%define with_nine 1
+%define with_nine 0
 %define base_drivers swrast,nouveau,radeon,r200
 %endif
 
@@ -33,7 +33,7 @@
 %define platform_drivers ,i915,i965
 %define with_vmware 1
 %define with_xa     1
-%define with_omx    1
+%define with_omx    0
 %endif
 
 %ifarch %{ix86} x86_64
@@ -43,13 +43,13 @@
 %endif
 
 %ifarch aarch64 %{ix86} x86_64
-%define with_opencl 1
+%define with_opencl 0
 %endif
 
 %ifarch %{arm} aarch64
 %define with_etnaviv   1
 %define with_freedreno 1
-%define with_omx       1
+%define with_omx       0
 %define with_vc4       1
 %define with_xa        1
 %endif
@@ -412,8 +412,8 @@ autoreconf -vfi
     --with-platforms=x11,drm,surfaceless%{?with_wayland:,wayland} \
     --enable-shared-glapi \
     --enable-gbm \
-    %{?with_omx:--enable-omx-bellagio} \
-    %{?with_opencl:--enable-opencl --enable-opencl-icd} %{!?with_opencl:--disable-opencl} \
+    --disable-omx-bellagio \
+    --disable-opencl \
     --enable-glx-tls \
     --enable-texture-float=yes \
 %if %{with_vulkan}
@@ -425,7 +425,7 @@ autoreconf -vfi
     --enable-dri \
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
-    %{?with_nine:--enable-nine} \
+    --disable-nine \
     --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,r300,nouveau \
 %else
     --with-gallium-drivers=%{?with_llvm:swrast,}virgl \
