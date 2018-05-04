@@ -67,7 +67,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        18.0.2
-Release:        1%{?rctag:.%{rctag}}%{?dist}
+Release:        2%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -682,6 +682,9 @@ done
 %endif
 
 %changelog
+* Fri May 04 2018 Dave Airlie <airlied@redhat.com> - 18.0.2-2
+- rebuild with omx/opencl/nine
+
 * Tue May 01 2018 Adam Jackson <ajax@redhat.com> - 18.0.2-1
 - Mesa 18.0.2
 
