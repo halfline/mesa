@@ -55,13 +55,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20171019
+%define gitdate 20180508
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 17.2.3
-Release: 9.%{gitdate}%{?dist}
+Version: 18.0.3
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -77,26 +77,11 @@ Source3: make-git-snapshot.sh
 # Fedora opts to ignore the optional part of clause 2 and treat that code as 2 clause BSD.
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
-Patch0: mesa-17.3-final.patch
 Patch1: nv50-fix-build.patch
-Patch2: 0001-mesa-Squash-merge-of-S3TC-support.patch
 Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
-
-# For bz1503861, fix visual artifacts on DRI PRIME offloading
-# Feel free to drop these patches during the next mesa rebase (>17.2.3)
-Patch30: 0001-intel-blorp-Use-mocs.tex-for-depth-stencil.patch
-Patch31: 0002-anv-blorp-Add-a-device-parameter-to-blorp_surf_for_a.patch
-Patch32: 0003-blorp-Turn-anv_CmdCopyBuffer-into-a-blorp_buffer_cop.patch
-Patch33: 0004-intel-blorp-Make-the-MOCS-setting-part-of-blorp_addr.patch
-Patch34: 0005-i965-Use-PTE-MOCS-for-all-external-buffers.patch
-
-Patch40: 0001-intel-Add-more-Coffee-Lake-PCI-IDs.patch
-
-# should all go away when we rebase for real
-Patch50: 0001-gallivm-Use-new-LLVM-fast-math-flags-API.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -328,9 +313,7 @@ The drivers with support for the Vulkan API.
 %setup -q -n mesa-%{gitdate}
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
-%patch0 -p1 -b .mesa17.2.3
 %patch1 -p1 -b .nv50rtti
-%patch2 -p1 -b .s3tc
 
 # this fastpath is:
 # - broken with swrast classic
@@ -345,16 +328,6 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
-
-%patch30 -p1 -b .bz1503861_patch1
-%patch31 -p1 -b .bz1503861_patch2
-%patch32 -p1 -b .bz1503861_patch3
-%patch33 -p1 -b .bz1503861_patch4
-%patch34 -p1 -b .bz1503861_patch5
-
-%patch40 -p1 -b .cfl_ids
-
-%patch50 -p1 -b .llvm6-1
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
@@ -414,9 +387,6 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
     --with-gallium-drivers=%{?with_llvm:swrast} \
 %endif
     %{?dri_drivers}
-
-# this seems to be neccessary for s390
-make -C src/mesa/drivers/dri/common/xmlpool/
 
 make %{?_smp_mflags} MKDEP=/bin/true
 
@@ -675,6 +645,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue May 08 2018 Dave Airlie <airlied@redhat.com> 18.0.3-1.20180508
+- rebase to 18.0.3
+
 * Wed Apr 18 2018 Adam Jackson <ajax@redhat.com> - 17.2.3-9
 - Rebuild for new llvm
 
