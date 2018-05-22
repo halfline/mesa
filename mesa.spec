@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.3
-Release: 1.%{gitdate}%{?dist}
+Release: 1.%{gitdate}%{?dist}.glvnd1
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -121,11 +121,12 @@ BuildRequires: pkgconfig(wayland-client) >= 1.11
 BuildRequires: pkgconfig(wayland-server) >= 1.11
 BuildRequires: pkgconfig(wayland-protocols) >= 1.8.0
 %endif
-BuildRequires: mesa-libGL-devel
+# BuildRequires: mesa-libGL-devel
 %if 0%{?with_vdpau}
 BuildRequires: libvdpau-devel
 %endif
 BuildRequires: zlib-devel
+BuildRequires: libglvnd-core-devel
 
 %description
 Mesa
@@ -361,6 +362,7 @@ export CXXFLAGS="$RPM_OPT_FLAGS -fno-rtti -fno-exceptions"
 
 %configure \
     %{?asm_flags} \
+    --enable-libglvnd \
     --enable-selinux \
     --enable-osmesa \
     --with-dri-driverdir=%{_libdir}/dri \
@@ -408,6 +410,17 @@ rm -f $RPM_BUILD_ROOT%{_sysconfdir}/drirc
 
 # libvdpau opens the versioned name, don't bother including the unversioned
 rm -f $RPM_BUILD_ROOT%{_libdir}/vdpau/*.so
+# likewise glvnd
+rm -f %{buildroot}%{_libdir}/libGLX_mesa.so
+rm -f %{buildroot}%{_libdir}/libEGL_mesa.so
+# XXX can we just not build this
+rm -f %{buildroot}%{_libdir}/libGLES*
+
+# XXX wayland-egl?
+
+# glvnd needs a default provider for indirect rendering where it cannot
+# determine the vendor
+ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_indirect.so.0
 
 # strip out useless headers
 rm -f $RPM_BUILD_ROOT%{_includedir}/GL/w*.h
@@ -454,18 +467,17 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libGL
 %defattr(-,root,root,-)
-%{_libdir}/libGL.so.1
-%{_libdir}/libGL.so.1.*
+%{_libdir}/libGLX_mesa.so.0*
+%{_libdir}/libGLX_indirect.so.0*
 
 %files libEGL
 %defattr(-,root,root,-)
-%{_libdir}/libEGL.so.1
-%{_libdir}/libEGL.so.1.*
+%{_datadir}/glvnd/egl_vendor.d/50_mesa.json
+%{_libdir}/libEGL_mesa.so.0*
 
 %files libGLES
 %defattr(-,root,root,-)
-%{_libdir}/libGLESv2.so.2
-%{_libdir}/libGLESv2.so.2.*
+# no files, all provided by libglvnd
 
 %files filesystem
 %defattr(-,root,root,-)
@@ -544,7 +556,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/GL/internal
 %{_includedir}/GL/internal/dri_interface.h
 %{_libdir}/pkgconfig/dri.pc
-%{_libdir}/libGL.so
 %{_libdir}/libglapi.so
 %{_libdir}/pkgconfig/gl.pc
 
@@ -559,7 +570,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/KHR
 %{_includedir}/KHR/khrplatform.h
 %{_libdir}/pkgconfig/egl.pc
-%{_libdir}/libEGL.so
 
 %files libGLES-devel
 %defattr(-,root,root,-)
@@ -574,7 +584,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/GLES3/gl32.h
 %{_includedir}/GLES3/gl3ext.h
 %{_libdir}/pkgconfig/glesv2.pc
-%{_libdir}/libGLESv2.so
 
 %files libOSMesa
 %defattr(-,root,root,-)
@@ -645,6 +654,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue May 22 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1.20180508.glvnd1
+- Bootstrap build for libglvnd
+
 * Tue May 08 2018 Dave Airlie <airlied@redhat.com> 18.0.3-1.20180508
 - rebase to 18.0.3
 
