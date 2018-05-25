@@ -66,8 +66,8 @@
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        18.0.2
-Release:        2%{?rctag:.%{rctag}}%{?dist}
+Version:        18.0.3
+Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -385,6 +385,9 @@ Headers for development with the Vulkan API.
 %if 0%{sanitize}
   cp -f %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
   cp -f %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
+%else
+  cmp %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
+  cmp %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
 %endif
 
 cp %{SOURCE4} docs/
@@ -682,6 +685,9 @@ done
 %endif
 
 %changelog
+* Wed May 23 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1
+- Mesa 18.0.3
+
 * Fri May 04 2018 Dave Airlie <airlied@redhat.com> - 18.0.2-2
 - rebuild with omx/opencl/nine
 
