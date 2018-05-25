@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.3
-Release: 1.%{gitdate}%{?dist}.glvnd1
+Release: 2.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -126,7 +126,7 @@ BuildRequires: pkgconfig(wayland-protocols) >= 1.8.0
 BuildRequires: libvdpau-devel
 %endif
 BuildRequires: zlib-devel
-BuildRequires: libglvnd-core-devel
+BuildRequires: libglvnd-devel
 
 %description
 Mesa
@@ -654,8 +654,8 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue May 22 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1.20180508.glvnd1
-- Bootstrap build for libglvnd
+* Fri May 25 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-2.20180508
+- Use glvnd
 
 * Tue May 08 2018 Dave Airlie <airlied@redhat.com> 18.0.3-1.20180508
 - rebase to 18.0.3
