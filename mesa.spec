@@ -679,7 +679,7 @@ done
 %endif
 
 %changelog
-* Wed May 23 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1
+* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1
 - Mesa 18.0.3
 - Disable old drivers: radeon, r200, r300, i915, vieux
 
