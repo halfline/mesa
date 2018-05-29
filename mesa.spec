@@ -1,7 +1,5 @@
 %bcond_without wayland
 
-%define with_radeonsi 1
-
 %global llvm_toolset %{nil}
 %global llvm_pkg_prefix %{nil}
 %if 0%{?rhel} >= 8
@@ -419,7 +417,7 @@ autoreconf -vfi
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
     --disable-nine \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}swrast,r600,%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,nouveau \
+    --with-gallium-drivers=%{?with_vmware:svga,}radeonsi,swrast,r600,%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,nouveau \
 %else
     --with-gallium-drivers=swrast,virgl \
 %endif
@@ -598,9 +596,7 @@ done
 %if %{with_hardware}
 %config(noreplace) %{_sysconfdir}/drirc
 %{_libdir}/dri/r600_dri.so
-%if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_dri.so
-%endif
 %ifarch %{ix86} x86_64
 %{_libdir}/dri/i965_dri.so
 %endif
@@ -621,9 +617,7 @@ done
 %endif
 #{_libdir}/dri/nouveau_drv_video.so
 #{_libdir}/dri/r600_drv_video.so
-#if 0%{?with_radeonsi}
 #{_libdir}/dri/radeonsi_drv_video.so
-#endif
 %endif
 %{_libdir}/dri/kms_swrast_dri.so
 %{_libdir}/dri/swrast_dri.so
@@ -638,9 +632,7 @@ done
 %files vdpau-drivers
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
 %{_libdir}/vdpau/libvdpau_r600.so.1*
-%if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
-%endif
 %endif
 %endif
 
