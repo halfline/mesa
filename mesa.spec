@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.3
-Release: 4.%{gitdate}%{?dist}
+Release: 5.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -138,6 +138,7 @@ Group: System Environment/Libraries
 Provides: libGL
 Requires: mesa-libglapi = %{version}-%{release}
 Requires: libdrm >= 2.4.83
+Requires: libglvnd-glx%{?_isa}
 
 %description libGL
 Mesa libGL runtime library.
@@ -146,6 +147,7 @@ Mesa libGL runtime library.
 Summary: Mesa libEGL runtime libraries
 Group: System Environment/Libraries
 Requires: mesa-libgbm = %{version}-%{release}
+Requires: libglvnd-egl%{?_isa}
 
 %description libEGL
 Mesa libEGL runtime libraries
@@ -154,6 +156,7 @@ Mesa libEGL runtime libraries
 Summary: Mesa libGLES runtime libraries
 Group: System Environment/Libraries
 Requires: mesa-libglapi = %{version}-%{release}
+Requires: libglvnd-gles%{?_isa}
 
 %description libGLES
 Mesa GLES runtime libraries
@@ -190,6 +193,7 @@ Summary: Mesa libGL development package
 Group: Development/Libraries
 Requires: mesa-libGL = %{version}-%{release}
 Requires: gl-manpages
+Requires: libglvnd-devel%{?_isa}
 Provides: libGL-devel
 
 %description libGL-devel
@@ -199,6 +203,7 @@ Mesa libGL development package
 Summary: Mesa libEGL development package
 Group: Development/Libraries
 Requires: mesa-libEGL = %{version}-%{release}
+Requires: libglvnd-devel%{?_isa}
 Provides: khrplatform-devel = %{version}-%{release}
 Obsoletes: khrplatform-devel < %{version}-%{release}
 
@@ -209,6 +214,7 @@ Mesa libEGL development package
 Summary: Mesa libGLES development package
 Group: Development/Libraries
 Requires: mesa-libGLES = %{version}-%{release}
+Requires: libglvnd-devel%{?_isa}
 
 %description libGLES-devel
 Mesa libGLES development package
@@ -656,8 +662,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-4.20180508
+* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-5.20171019
 - Fix gl.pc when using glvnd
+- Fix subpackage dependencies for glvnd
 
 * Fri May 25 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-2.20180508
 - Use glvnd
