@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.3
-Release: 2.%{gitdate}%{?dist}
+Release: 3.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -82,6 +82,7 @@ Patch9: mesa-8.0-llvmpipe-shmget.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
+Patch21: 0001-pkgconfig-Fix-gl.pc-when-glvnd-is-enabled.patch
 
 BuildRequires: pkgconfig autoconf automake libtool
 %if %{with_hardware}
@@ -654,6 +655,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-3.20180508
+- Fix gl.pc when using glvnd
+
 * Fri May 25 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-2.20180508
 - Use glvnd
 
