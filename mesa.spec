@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.3
-Release: 3.%{gitdate}%{?dist}
+Release: 4.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -330,6 +330,7 @@ grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 
 %patch15 -p1 -b .hwfloat
 #patch20 -p1 -b .egbe
+%patch21 -p1 -b .glpc
 
 %if 0%{with_private_llvm}
 sed -i 's/\[llvm-config\]/\[llvm-private-config-%{__isa_bits}\]/g' configure.ac
@@ -655,7 +656,7 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-3.20180508
+* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-4.20180508
 - Fix gl.pc when using glvnd
 
 * Fri May 25 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-2.20180508
