@@ -1,14 +1,6 @@
 %bcond_without wayland
 
-# S390 doesn't have video cards, but we need swrast for xserver's GLX
-# llvm (and thus llvmpipe) doesn't actually work on ppc32
-%ifnarch s390 ppc
-%define with_llvm 1
-%endif
-
-%if 0%{?with_llvm}
 %define with_radeonsi 1
-%endif
 
 %global llvm_toolset %{nil}
 %global llvm_pkg_prefix %{nil}
@@ -117,11 +109,9 @@ BuildRequires:  libxshmfence-devel
 BuildRequires:  elfutils
 BuildRequires:  python2
 BuildRequires:  gettext
-%if 0%{?with_llvm}
 BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
 %if 0%{?with_opencl}
 BuildRequires: %{llvm_pkg_prefix}clang-devel >= 3.0
-%endif
 %endif
 BuildRequires: elfutils-libelf-devel
 BuildRequires: python2-libxml2
@@ -422,16 +412,16 @@ autoreconf -vfi
 %if %{with_vulkan}
     %{?vulkan_drivers} \
 %endif
-    %{?with_llvm:--enable-llvm} \
-    %{?with_llvm:--enable-llvm-shared-libs} \
-    %{?with_llvm:--with-llvm-prefix=/opt/rh/%{llvm_toolset}/root/usr } \
+    --enable-llvm \
+    --enable-llvm-shared-libs \
+    --with-llvm-prefix=/opt/rh/%{llvm_toolset}/root/usr \
     --enable-dri \
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
     --disable-nine \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,nouveau \
+    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}swrast,r600,%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,nouveau \
 %else
-    --with-gallium-drivers=%{?with_llvm:swrast,}virgl \
+    --with-gallium-drivers=swrast,virgl \
 %endif
     %{?dri_drivers}
 
@@ -607,11 +597,9 @@ done
 %files dri-drivers
 %if %{with_hardware}
 %config(noreplace) %{_sysconfdir}/drirc
-%if 0%{?with_llvm}
 %{_libdir}/dri/r600_dri.so
 %if 0%{?with_radeonsi}
 %{_libdir}/dri/radeonsi_dri.so
-%endif
 %endif
 %ifarch %{ix86} x86_64
 %{_libdir}/dri/i965_dri.so
@@ -632,16 +620,12 @@ done
 %{_libdir}/dri/vmwgfx_dri.so
 %endif
 #{_libdir}/dri/nouveau_drv_video.so
-#if 0%{?with_llvm}
 #{_libdir}/dri/r600_drv_video.so
 #if 0%{?with_radeonsi}
 #{_libdir}/dri/radeonsi_drv_video.so
 #endif
-#endif
 %endif
-%if 0%{?with_llvm}
 %{_libdir}/dri/kms_swrast_dri.so
-%endif
 %{_libdir}/dri/swrast_dri.so
 %{_libdir}/dri/virtio_gpu_dri.so
 
@@ -653,11 +637,9 @@ done
 %if 0%{?with_vdpau}
 %files vdpau-drivers
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
-%if 0%{?with_llvm}
 %{_libdir}/vdpau/libvdpau_r600.so.1*
 %if 0%{?with_radeonsi}
 %{_libdir}/vdpau/libvdpau_radeonsi.so.1*
-%endif
 %endif
 %endif
 %endif
