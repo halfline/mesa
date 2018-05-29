@@ -26,11 +26,11 @@
 # XXX maybe wrong...
 %define with_vaapi 0
 %define with_nine 0
-%define base_drivers swrast,nouveau,radeon,r200
+%define base_drivers swrast
 %endif
 
 %ifarch %{ix86} x86_64
-%define platform_drivers ,i915,i965
+%define platform_drivers ,i965
 %define with_vmware 1
 %define with_xa     1
 %define with_omx    0
@@ -90,8 +90,8 @@ Patch4:         0004-bigendian-assert.patch
 # non-upstreamed ones
 Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch11:        0001-Fix-linkage-against-shared-glapi.patch
-
 Patch20:        0001-gallium-Disable-rgb10-configs-by-default.patch
+Patch21:        mesa-18.0.2-gallium-osmesa.patch
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -115,7 +115,7 @@ BuildRequires:  libXi-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libxshmfence-devel
 BuildRequires:  elfutils
-BuildRequires:  python
+BuildRequires:  python2
 BuildRequires:  gettext
 %if 0%{?with_llvm}
 BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
@@ -124,7 +124,7 @@ BuildRequires: %{llvm_pkg_prefix}clang-devel >= 3.0
 %endif
 %endif
 BuildRequires: elfutils-libelf-devel
-BuildRequires: libxml2-python
+BuildRequires: python2-libxml2
 BuildRequires: libudev-devel
 BuildRequires: bison flex
 %if %{with wayland}
@@ -148,7 +148,7 @@ BuildRequires: libclc-devel opencl-filesystem
 %if 0%{?with_vulkan}
 BuildRequires: vulkan-devel
 %endif
-BuildRequires: python-mako
+BuildRequires: python2-mako
 %ifarch %{valgrind_arches}
 BuildRequires: pkgconfig(valgrind)
 %endif
@@ -429,7 +429,7 @@ autoreconf -vfi
 %if %{with_hardware}
     %{?with_xa:--enable-xa} \
     --disable-nine \
-    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,r300,nouveau \
+    --with-gallium-drivers=%{?with_vmware:svga,}%{?with_radeonsi:radeonsi,}%{?with_llvm:swrast,r600,}%{?with_freedreno:freedreno,}%{?with_etnaviv:etnaviv,imx,}%{?with_vc4:vc4,}virgl,nouveau \
 %else
     --with-gallium-drivers=%{?with_llvm:swrast,}virgl \
 %endif
@@ -607,10 +607,6 @@ done
 %files dri-drivers
 %if %{with_hardware}
 %config(noreplace) %{_sysconfdir}/drirc
-%{_libdir}/dri/radeon_dri.so
-%{_libdir}/dri/r200_dri.so
-%{_libdir}/dri/nouveau_vieux_dri.so
-%{_libdir}/dri/r300_dri.so
 %if 0%{?with_llvm}
 %{_libdir}/dri/r600_dri.so
 %if 0%{?with_radeonsi}
@@ -618,7 +614,6 @@ done
 %endif
 %endif
 %ifarch %{ix86} x86_64
-%{_libdir}/dri/i915_dri.so
 %{_libdir}/dri/i965_dri.so
 %endif
 %if 0%{?with_vc4}
@@ -658,7 +653,6 @@ done
 %if 0%{?with_vdpau}
 %files vdpau-drivers
 %{_libdir}/vdpau/libvdpau_nouveau.so.1*
-%{_libdir}/vdpau/libvdpau_r300.so.1*
 %if 0%{?with_llvm}
 %{_libdir}/vdpau/libvdpau_r600.so.1*
 %if 0%{?with_radeonsi}
@@ -687,9 +681,10 @@ done
 %changelog
 * Wed May 23 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1
 - Mesa 18.0.3
+- Disable old drivers: radeon, r200, r300, i915, vieux
 
 * Fri May 04 2018 Dave Airlie <airlied@redhat.com> - 18.0.2-2
-- rebuild with omx/opencl/nine
+- Disable omx/opencl/nine
 
 * Tue May 01 2018 Adam Jackson <ajax@redhat.com> - 18.0.2-1
 - Mesa 18.0.2
