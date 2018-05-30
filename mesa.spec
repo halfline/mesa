@@ -55,13 +55,13 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20180508
+%define gitdate 20180530
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 18.0.3
-Release: 5.%{gitdate}%{?dist}
+Version: 18.0.4
+Release: 1.%{gitdate}%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -78,7 +78,8 @@ Source3: make-git-snapshot.sh
 Source4: Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1: nv50-fix-build.patch
-Patch9: mesa-8.0-llvmpipe-shmget.patch
+# backport of dri sw xshm support to help qxl
+Patch2: dri-sw-xshm-support.patch
 Patch12: mesa-8.0.1-fix-16bpp.patch
 Patch15: mesa-9.2-hardware-float.patch
 Patch20: mesa-10.2-evergreen-big-endian.patch
@@ -322,16 +323,8 @@ The drivers with support for the Vulkan API.
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
+%patch2 -p1 -b .xshm
 
-# this fastpath is:
-# - broken with swrast classic
-# - broken on 24bpp
-# - not a huge win anyway
-# - ABI-broken wrt upstream
-# - eventually obsoleted by vgem
-#
-# dear ajax: fix this one way or the other
-#patch9 -p1 -b .shmget
 #patch12 -p1 -b .16bpp
 
 %patch15 -p1 -b .hwfloat
@@ -662,7 +655,11 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
-* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-5.20171019
+* Wed May 30 2018 Dave Airlie <airlied@redhat.com - 18.0.4-1.20180530
+- rebase to 18.0.4
+- backport shm put/get image for improved sw renderers (esp under qxl)
+
+* Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-5.20180508
 - Fix gl.pc when using glvnd
 - Fix subpackage dependencies for glvnd
 
