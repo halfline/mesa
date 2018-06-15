@@ -7,7 +7,7 @@
 %global llvm_pkg_prefix %{llvm_toolset}-
 %endif
 
-%ifarch s390 s390x ppc
+%ifarch s390x
 %define with_hardware 0
 %define base_drivers swrast
 %else
@@ -381,6 +381,8 @@ Headers for development with the Vulkan API.
 cp %{SOURCE4} docs/
 
 %build
+# sigh
+export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 autoreconf -vfi
 
 %ifarch %{ix86}
