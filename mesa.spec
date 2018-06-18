@@ -40,7 +40,7 @@
 %define with_etnaviv   1
 %define with_freedreno 1
 %define with_omx       0
-%define with_vc4       0
+#define with_vc4       1
 %define with_xa        1
 %endif
 
