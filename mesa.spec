@@ -50,13 +50,13 @@
 %define vulkan_drivers --with-vulkan-drivers=intel,radeon
 %endif
 
-%global sanitize 1
+%global sanitize 0
 
 #global rctag rc3
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        18.0.3
+Version:        18.0.5
 Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
@@ -369,11 +369,13 @@ Headers for development with the Vulkan API.
 %endif
 
 %prep
-%autosetup -n %{name}-%{version}%{?rctag:-%{rctag}} -p1
 %if 0%{sanitize}
+%setup -q -n %{name}-%{version}%{?rctag:-%{rctag}}
   cp -f %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
   cp -f %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
+  exit
 %else
+%autosetup -n %{name}-%{version}%{?rctag:-%{rctag}} -p1
   cmp %{SOURCE1} src/gallium/auxiliary/vl/vl_decoder.c
   cmp %{SOURCE2} src/gallium/auxiliary/vl/vl_mpeg12_decoder.c
 %endif
@@ -655,6 +657,9 @@ done
 %endif
 
 %changelog
+* Mon Jun 18 2018 Adam Jackson <ajax@redhat.com> - 18.0.5-1
+- Mesa 18.0.5
+
 * Tue May 29 2018 Adam Jackson <ajax@redhat.com> - 18.0.3-1
 - Mesa 18.0.3
 - Disable old drivers: radeon, r200, r300, i915, vieux
