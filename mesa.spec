@@ -56,13 +56,13 @@
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        18.0.5
+Version:        18.1.2
 Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
-#Source0:        https://mesa.freedesktop.org/archive/%{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
-Source0:        %{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
+Source0:        https://mesa.freedesktop.org/archive/%{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
+#Source0:        %{name}-%{version}%{?rctag:-%{rctag}}.tar.xz
 Source1:        vl_decoder.c
 Source2:        vl_mpeg12_decoder.c
 Source3:        Makefile
@@ -79,7 +79,6 @@ Patch4:         0004-bigendian-assert.patch
 # glvnd support patches
 # non-upstreamed ones
 Patch10:        glvnd-fix-gl-dot-pc.patch
-Patch11:        0001-Fix-linkage-against-shared-glapi.patch
 Patch20:        0001-gallium-Disable-rgb10-configs-by-default.patch
 Patch21:        mesa-18.0.2-gallium-osmesa.patch
 
@@ -657,6 +656,9 @@ done
 %endif
 
 %changelog
+* Wed Jun 20 2018 Adam Jackson <ajax@redhat.com> - 18.1.2-1
+- Mesa 18.1.2
+
 * Mon Jun 18 2018 Adam Jackson <ajax@redhat.com> - 18.0.5-1
 - Mesa 18.0.5
 
