@@ -37,10 +37,10 @@
 %endif
 
 %ifarch %{arm} aarch64
-%define with_etnaviv   1
-%define with_freedreno 1
+%define with_etnaviv   0
+%define with_freedreno 0
 %define with_omx       0
-#define with_vc4       1
+%define with_vc4       0
 %define with_xa        1
 %endif
 
@@ -57,7 +57,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        18.1.2
-Release:        1%{?rctag:.%{rctag}}%{?dist}
+Release:        2%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -162,7 +162,7 @@ Obsoletes:      mesa-dri-filesystem < %{?epoch:%{epoch}}%{version}-%{release}
 %package libGL
 Summary:        Mesa libGL runtime libraries
 Requires:       %{name}-libglapi%{?_isa} = %{?epoch:%{epoch}}%{version}-%{release}
-Requires:       libglvnd-glx%{?_isa}
+Requires:       libglvnd-glx%{?_isa} >= 1:1.0.1-0.7
 
 %description libGL
 %{summary}.
@@ -445,7 +445,7 @@ rm -f %{buildroot}%{_libdir}/libGLES*
 
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
-ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_indirect.so.0
+ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_fedora.so.0
 
 # strip out useless headers
 rm -f %{buildroot}%{_includedir}/GL/w*.h
@@ -474,7 +474,7 @@ done
 
 %files libGL
 %{_libdir}/libGLX_mesa.so.0*
-%{_libdir}/libGLX_indirect.so.0*
+%{_libdir}/libGLX_fedora.so.0*
 %files libGL-devel
 %{_includedir}/GL/gl.h
 %{_includedir}/GL/gl_mangle.h
@@ -656,6 +656,10 @@ done
 %endif
 
 %changelog
+* Wed Jun 20 2018 Adam Jackson <ajax@redhat.com> - 18.1.2-2
+- Disable arm-specific drivers
+- Use alternate glvnd indirect library name
+
 * Wed Jun 20 2018 Adam Jackson <ajax@redhat.com> - 18.1.2-1
 - Mesa 18.1.2
 
