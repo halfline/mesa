@@ -55,19 +55,19 @@
 
 %define _default_patch_fuzz 2
 
-%define gitdate 20180530
+#define gitdate 20180530
 #% define snapshot 
 
 Summary: Mesa graphics libraries
 Name: mesa
-Version: 18.0.4
-Release: 1.%{gitdate}%{?dist}
+Version: 18.0.5
+Release: 1%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
 
-# Source0: MesaLib-%{version}.tar.xz
-Source0: %{name}-%{gitdate}.tar.xz
+Source0: mesa-%{version}.tar.xz
+#Source0: %{name}-%{gitdate}.tar.xz
 Source1: sanitize-tarball.sh
 Source2: make-release-tarball.sh
 Source3: make-git-snapshot.sh
@@ -139,7 +139,7 @@ Group: System Environment/Libraries
 Provides: libGL
 Requires: mesa-libglapi = %{version}-%{release}
 Requires: libdrm >= 2.4.83
-Requires: libglvnd-glx%{?_isa}
+Requires: libglvnd-glx%{?_isa} >= 1:1.0.1-0.7
 
 %description libGL
 Mesa libGL runtime library.
@@ -318,8 +318,8 @@ The drivers with support for the Vulkan API.
 %endif
 
 %prep
-#setup -q -n Mesa-%{version}%{?snapshot}
-%setup -q -n mesa-%{gitdate}
+%setup -q -n mesa-%{version}%{?snapshot}
+#setup -q -n mesa-%{gitdate}
 # make sure you run sanitize-tarball.sh on mesa source tarball or next line will exit
 grep -q ^/ src/gallium/auxiliary/vl/vl_decoder.c && exit 1
 %patch1 -p1 -b .nv50rtti
@@ -421,7 +421,7 @@ rm -f %{buildroot}%{_libdir}/libGLES*
 
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
-ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_indirect.so.0
+ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_fedora.so.0
 
 # strip out useless headers
 rm -f $RPM_BUILD_ROOT%{_includedir}/GL/w*.h
@@ -469,7 +469,7 @@ rm -rf $RPM_BUILD_ROOT
 %files libGL
 %defattr(-,root,root,-)
 %{_libdir}/libGLX_mesa.so.0*
-%{_libdir}/libGLX_indirect.so.0*
+%{_libdir}/libGLX_fedora.so.0*
 
 %files libEGL
 %defattr(-,root,root,-)
@@ -655,6 +655,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Wed Jun 20 2018 Adam Jackson <ajax@redhat.com> - 18.0.5-1
+- Mesa 18.0.5
+
 * Wed May 30 2018 Dave Airlie <airlied@redhat.com - 18.0.4-1.20180530
 - rebase to 18.0.4
 - backport shm put/get image for improved sw renderers (esp under qxl)
