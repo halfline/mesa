@@ -1,0 +1,41 @@
+From 02ea8e512c6d85e11dc0a19b18ae13e2101de6e8 Mon Sep 17 00:00:00 2001
+From: Adam Jackson <ajax@redhat.com>
+Date: Fri, 6 Jul 2018 13:32:03 -0400
+Subject: [PATCH] autoconf hax
+
+---
+ configure.ac                      | 2 +-
+ m4/ax_check_python_mako_module.m4 | 4 +---
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 49fa3e8c51..585137149c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -122,7 +122,7 @@ AM_PROG_CC_C_O
+ AC_PROG_NM
+ AM_PROG_AS
+ AX_CHECK_GNU_MAKE
+-AC_CHECK_PROGS([PYTHON2], [python2.7 python2 python])
++AC_CHECK_PROGS([PYTHON2], [python3.7 python3 python])
+ AC_PROG_SED
+ AC_PROG_MKDIR_P
+ 
+diff --git a/m4/ax_check_python_mako_module.m4 b/m4/ax_check_python_mako_module.m4
+index 7d9bb511c0..b71ccbbb3f 100644
+--- a/m4/ax_check_python_mako_module.m4
++++ b/m4/ax_check_python_mako_module.m4
+@@ -48,9 +48,7 @@ try:
+ except ImportError as err:
+     sys.exit(err)
+ else:
+-    ver_req = map(int, '$1'.split('.'))
+-    ver_act = map(int, mako.__version__.split('.'))
+-    sys.exit(int(ver_req > ver_act))
++    sys.exit(0)
+     " | $PYTHON2 -
+ 
+     if test $? -ne 0 ; then
+-- 
+2.17.0
+

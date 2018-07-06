@@ -56,8 +56,8 @@
 
 Name:           mesa
 Summary:        Mesa graphics libraries
-Version:        18.1.2
-Release:        2%{?rctag:.%{rctag}}%{?dist}
+Version:        18.1.3
+Release:        1%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -72,7 +72,6 @@ Source3:        Makefile
 Source4:        Mesa-MLAA-License-Clarification-Email.txt
 
 Patch1:         0001-llvm-SONAME-without-version.patch
-Patch2:         0002-hardware-gloat.patch
 Patch3:         0003-evergreen-big-endian.patch
 Patch4:         0004-bigendian-assert.patch
 
@@ -81,6 +80,24 @@ Patch4:         0004-bigendian-assert.patch
 Patch10:        glvnd-fix-gl-dot-pc.patch
 Patch20:        0001-gallium-Disable-rgb10-configs-by-default.patch
 Patch21:        mesa-18.0.2-gallium-osmesa.patch
+
+# python3! This first patch is a backport/squash of
+# https://gitlab.freedesktop.org/bochecha/mesa/tree/python3
+# plus some bptc fixes:
+# f69bc797e15fe6beb9e439009fab55f7fae0b7f9
+# 3153bcc73ef857f9bb294d2eea6964ed35e884bb
+# and meson fixes:
+# 3886aa26d4234b51193682a932e4b2ca5e472fad
+# 1139427a7f629641912e995843705641aacc126f
+# to get the rebase to apply and work
+Patch30: 0001-mesa-Backport-stuff-and-build-with-python3.patch
+# Some gross autotools hacks to make it build
+# < bochecha> if you just want to make the build succeeds, you can
+#             transform those two maps into lists (wrap them in `list(…)`)
+#             and then the comparison should work
+Patch31: 0001-autoconf-hax.patch
+# And another bptc cherry pick
+Patch32: 0001-mesa-add-header-for-share-bptc-decompress-functions.patch
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -104,14 +121,13 @@ BuildRequires:  libXi-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libxshmfence-devel
 BuildRequires:  elfutils
-BuildRequires:  python2
+BuildRequires:  python3
 BuildRequires:  gettext
 BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
 %if 0%{?with_opencl}
 BuildRequires: %{llvm_pkg_prefix}clang-devel >= 3.0
 %endif
 BuildRequires: elfutils-libelf-devel
-BuildRequires: python2-libxml2
 BuildRequires: libudev-devel
 BuildRequires: bison flex
 %if %{with wayland}
@@ -135,7 +151,7 @@ BuildRequires: libclc-devel opencl-filesystem
 %if 0%{?with_vulkan}
 BuildRequires: vulkan-devel
 %endif
-BuildRequires: python2-mako
+BuildRequires: python3-mako
 %ifarch %{valgrind_arches}
 BuildRequires: pkgconfig(valgrind)
 %endif
@@ -382,8 +398,6 @@ Headers for development with the Vulkan API.
 cp %{SOURCE4} docs/
 
 %build
-# sigh
-export RHEL_ALLOW_PYTHON2_FOR_BUILD=1
 autoreconf -vfi
 
 %ifarch %{ix86}
@@ -656,6 +670,9 @@ done
 %endif
 
 %changelog
+* Fri Jul 06 2018 Adam Jackson <ajax@redhat.com> - 18.1.3-1
+- Mesa 18.1.3
+
 * Wed Jun 20 2018 Adam Jackson <ajax@redhat.com> - 18.1.2-2
 - Disable arm-specific drivers
 - Use alternate glvnd indirect library name
