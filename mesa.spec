@@ -61,7 +61,7 @@
 Summary: Mesa graphics libraries
 Name: mesa
 Version: 18.0.5
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: MIT
 Group: System Environment/Libraries
 URL: http://www.mesa3d.org
@@ -425,7 +425,7 @@ rm -f %{buildroot}%{_libdir}/libGLES*
 
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
-ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_fedora.so.0
+ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_system.so.0
 
 # strip out useless headers
 rm -f $RPM_BUILD_ROOT%{_includedir}/GL/w*.h
@@ -473,7 +473,7 @@ rm -rf $RPM_BUILD_ROOT
 %files libGL
 %defattr(-,root,root,-)
 %{_libdir}/libGLX_mesa.so.0*
-%{_libdir}/libGLX_fedora.so.0*
+%{_libdir}/libGLX_system.so.0*
 
 %files libEGL
 %defattr(-,root,root,-)
@@ -659,6 +659,9 @@ rm -rf $RPM_BUILD_ROOT
 %endif
 
 %changelog
+* Tue Jul 24 2018 Dave Airlie <airlied@redhat.com> - 18.0.5-3
+- rename fedora to system in glvnd fallback
+
 * Thu Jul 19 2018 Dave Airlie <airlied@redhat.com> - 18.0.5-2
 - Fix timeout overflow warnings (backport from upstream + virgl)
 
