@@ -57,7 +57,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        18.1.3
-Release:        1%{?rctag:.%{rctag}}%{?dist}
+Release:        2%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -459,7 +459,7 @@ rm -f %{buildroot}%{_libdir}/libGLES*
 
 # glvnd needs a default provider for indirect rendering where it cannot
 # determine the vendor
-ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_fedora.so.0
+ln -s %{_libdir}/libGLX_mesa.so.0 %{buildroot}%{_libdir}/libGLX_system.so.0
 
 # strip out useless headers
 rm -f %{buildroot}%{_includedir}/GL/w*.h
@@ -488,7 +488,7 @@ done
 
 %files libGL
 %{_libdir}/libGLX_mesa.so.0*
-%{_libdir}/libGLX_fedora.so.0*
+%{_libdir}/libGLX_system.so.0*
 %files libGL-devel
 %{_includedir}/GL/gl.h
 %{_includedir}/GL/gl_mangle.h
@@ -670,6 +670,9 @@ done
 %endif
 
 %changelog
+* Tue Jul 24 2018 Dave Airlie <airlied@redhat.com> - 18.1.3-2
+- rename fallback for glvnd
+
 * Fri Jul 06 2018 Adam Jackson <ajax@redhat.com> - 18.1.3-1
 - Mesa 18.1.3
 
