@@ -3,7 +3,7 @@
 %global llvm_toolset %{nil}
 %global llvm_pkg_prefix %{nil}
 %if 0%{?rhel} >= 8
-%global llvm_toolset llvm-toolset-7
+%global llvm_toolset llvm-toolset-6.0
 %global llvm_pkg_prefix %{llvm_toolset}-
 %endif
 
@@ -57,7 +57,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        18.1.3
-Release:        2%{?rctag:.%{rctag}}%{?dist}
+Release:        3%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -670,6 +670,9 @@ done
 %endif
 
 %changelog
+* Thu Aug 02 2018 Tom Stellard <tstellar@redhat.com> - 18.1.3-3
+- Rebuild for LLVM 6.0
+
 * Tue Jul 24 2018 Dave Airlie <airlied@redhat.com> - 18.1.3-2
 - rename fallback for glvnd
 
