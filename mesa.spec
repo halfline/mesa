@@ -121,7 +121,7 @@ BuildRequires:  libXi-devel
 BuildRequires:  libXmu-devel
 BuildRequires:  libxshmfence-devel
 BuildRequires:  elfutils
-BuildRequires:  python3
+BuildRequires:  python3-devel
 BuildRequires:  gettext
 BuildRequires: %{llvm_pkg_prefix}llvm-devel >= 3.4-7
 %if 0%{?with_opencl}
@@ -396,6 +396,11 @@ Headers for development with the Vulkan API.
 %endif
 
 cp %{SOURCE4} docs/
+
+pathfix.py -i %{__python3} -pn bin/*.py src/egl/generate/*.py \
+                               src/gallium/tools/trace/*.py \
+                               src/compiler/glsl/tests/*.py \
+                               src/compiler/glsl/glcpp/tests/*.py
 
 %build
 autoreconf -vfi
