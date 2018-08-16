@@ -57,7 +57,7 @@
 Name:           mesa
 Summary:        Mesa graphics libraries
 Version:        18.1.3
-Release:        3%{?rctag:.%{rctag}}%{?dist}
+Release:        4%{?rctag:.%{rctag}}%{?dist}
 
 License:        MIT
 URL:            http://www.mesa3d.org
@@ -98,6 +98,8 @@ Patch30: 0001-mesa-Backport-stuff-and-build-with-python3.patch
 Patch31: 0001-autoconf-hax.patch
 # And another bptc cherry pick
 Patch32: 0001-mesa-add-header-for-share-bptc-decompress-functions.patch
+
+Patch40: 0001-gallium-winsys-kms-don-t-unmap-what-wasn-t-mapped.patch
 
 BuildRequires:  gcc
 BuildRequires:  gcc-c++
@@ -675,6 +677,10 @@ done
 %endif
 
 %changelog
+* Thu Aug 16 2018 Ray Strode <rstrode@redhat.com> - 18.1.3-4
+- Fix crash on screen resolution change
+  Resolves: #1616390
+
 * Thu Aug 02 2018 Tom Stellard <tstellar@redhat.com> - 18.1.3-3
 - Rebuild for LLVM 6.0
 
